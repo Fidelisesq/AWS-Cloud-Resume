@@ -61,14 +61,10 @@ jobs:
 
       - name: Terraform Init
         id: init
-        env:
-          TF_LOG: DEBUG
         run: cd terraform && terraform init
 
       - name: Terraform Validate
         id: validate
-        env:
-          TF_LOG: DEBUG
         run: cd terraform && terraform validate
 
       - name: Terraform Plan
