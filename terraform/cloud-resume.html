@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Resume - Fidelis Ikoroje</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 15px;
+            line-height: 1.5;
+            /*background-color: lightskyblue;*/
+            background: rgba(255, 85, 71, 0.7);
+            border-style: inset;
+            border-width: 5px;
+        }
+
+        .container {
+            max-width: 1150px;
+            margin: 0 auto;
+        }
+
+        h1, h2, h3, h4 {
+            color: #2c3e50;
+            margin-bottom: 1px; /* Adjust this value to your preference */
+            padding-bottom: 0; /* Removing any padding that might be adding extra space */
+
+        }
+
+
+        .contact-info, .skills, .experience, .education, .training {
+            margin-bottom: 20px;
+        }
+
+        ul {
+            padding-left: 20px;
+        }
+
+        .bold {
+            font-weight: bold;
+        }
+
+        /* Globally justify all <p> elements */
+        p, ul, ol {
+            text-align: justify;
+        }
+
+        a:hover {
+            text-decoration: underline;
+        }
+
+        /* Flexible layout styles */
+        .resume-section {
+            padding: 10px;
+            text-align: center; /* Center-align text in sections */
+        }
+
+        @media only screen and (min-width: 600px) {
+            .resume-section {
+                padding: 10px;
+            }
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            width: 100%; /* Ensure it takes the full width of the container */
+        }
+
+        #visitor-counter {
+            margin-left: auto; /* Pushes the visitor counter to the right */
+        }
+
+        #visitor-counter {
+            margin-left: auto; /* Pushes the visitor counter to the right */
+            font-weight: bold;
+        }
+
+        #last-updated {
+            font-size: 0.9em;
+            color: gray;
+        }
+
+        body {
+            position: relative;
+        }
+
+        img.bottom-right {
+            position: absolute;
+            bottom: 0;
+            right: 0;
+            margin: 0;
+            width: auto; /* Adjust as needed for size */
+            height: auto; /* Adjust as needed for size */
+            max-width: 500px; /* Set a maximum size or adjust as desired */
+            max-height: 220px;
+        }
+
+        #top-right-image {
+            position: absolute;
+            top: 0;
+            right: 0;
+            margin: 0;
+            padding: 0;
+            border: none;
+            max-width: 110px; /* Adjust size as needed */
+        }
+
+        /* Add media query to handle smaller screens */
+        @media only screen and (max-width: 600px) {
+            img.bottom-right {
+                max-width: 100px; /* Adjust the size for smaller screens */
+                max-height: 44px;
+            }
+        }
+
+
+    </style>
+
+</head>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<body>
+<img src="https://aws-certification-fidelis.s3.us-east-1.amazonaws.com/aws-saa3.png" class="bottom-right" alt="AWS Certification Badge">
+<img id="top-right-image" src="https://aws-certification-fidelis.s3.us-east-1.amazonaws.com/aws-badge.png" alt="AWS Badge">
+<div class="container">
+    <h1>Fidelis Ikoroje</h1>
+    <div class="header">
+        <h2 class="bold">DevOps Engineer</h2>
+        <div>
+            <div id="visitor-counter">Visitor Count: 0</div>
+            <div id="last-updated">Last time updated: <span id="update-time"></span></div>
+        </div>
+    </div>
+
+    <p>
+        (+44) 777-1042-109 • fidelis.ikoroje@gmail.com <br>
+        Derby, United Kingdom<br>
+        <a href="https://www.linkedin.com/in/fidelis-ikoroje/"target="_blank">LinkedIn</a> • <a href="https://dev.to/fidelisesq" target="_blank">Blog</a> • <a href="https://github.com/Fidelisesq" target="_blank">GitHub</a><br>
+
+    </p>
+
+    <h2>PROFESSIONAL SUMMARY</h2>
+    <p>
+        Results-driven Cloud and DevOps Engineer with expertise in designing, implementing, and managing scalable cloud architectures across AWS, Azure, and GCP environments. 
+        Skilled in leveraging containerization (Docker) and orchestration (Kubernetes) to optimize infrastructure performance and reliability. Adept at automating processes using 
+        tools like Ansible, streamlining CI/CD pipelines, and enhancing application deployment workflows. Demonstrates a strong focus on reducing downtime, improving efficiency, 
+        and implementing robust application security measures. Proficient in scripting languages such as Python and Bash, with a solid understanding of agile methodologies, 
+        and monitoring and logging best practices.
+    </p>
+
+    <h2>PERSONAL PROJECT EXPERIENCE/LEARNING</h2>
+    <p>
+        I aim at designing, implementing, and managing scalable and cost-effective cloud computing solutions for organisations.
+        Hence, I have created a self-learning journey for myself and have implemented the below. <br> Details are in my <a href="https://dev.to/fidelisesq"target="_blank">blog post here:</a>
+    </p>
+    <ol>
+        <li>
+            <strong>AWS Cloud Resume</strong><br>
+            <em>Overview:</em> Enhanced resume accessibility and visibility by hosting a responsive resume website on AWS, leveraging serverless technologies including Lambda, DynamoDB, API Gateway, S3, CloudFront, and AWS WAF, all deployed and managed by Terraform in a CI/CD pipeline using GitHub.<br>
+            <em>Key Components:</em>
+            <ul>
+                <li>Resume website hosted on S3 for static website hosting.</li>
+                <li>API Gateway and Lambda function to handle visitor count updates.</li>
+                <li>Visitor count stored and updated in DynamoDB.</li>
+                <li>CloudFront used for global content delivery, ensuring low-latency access.</li>
+                <li>AWS WAF configured for additional security on Cloudfront while API Gateway Authorization & throttling are enabled.</li>
+                <li>Terraform used for infrastructure provisioning and management.</li>
+                <li>CI/CD pipeline implemented with GitHub Actions for automated deployment and testing.</li>
+            </ul>
+            <em>Outcome:</em> Improved resume accessibility with a fast, secure, and automated serverless architecture hosted on AWS.
+        </li>
+        <li>
+            <strong>Multi-Tier Web Application on AWS</strong><br>
+            <em>Overview:</em> Designed and deployed a secure, scalable multi-tier application using AWS services.<br>
+            <em>Key Components:</em>
+            <ul>
+                <li>Frontend hosted on EC2 instances behind an Application Load Balancer.</li>
+                <li>Backend services replaced by AWS-managed services: Amazon MQ, RDS MySQL, and ElastiCache.</li>
+                <li>DNS configured using Route 53, including a private hosted zone for internal communications.</li>
+            </ul>
+            <em>Outcome:</em> Improved application scalability, security, and cost-effectiveness by transitioning to managed services.
+        </li>
+        <li>
+            <strong>DeepSeek Model R1 Deployment on AWS EC2 Using Terraform & Github Action</strong><br>
+            <em>Overview:</em> Deployed and hosted the DeepSeek Model R1 on an AWS EC2 instance using Terraform for infrastructure as code and GitHub Actions for CI/CD.<br>
+            <em>Key Components:</em>
+            <ul>
+                <li>Utilized Terraform to provision AWS resources, including EC2 instances, VPC, security groups, and an Application Load Balancer.</li>
+                <li>Set up a GitHub Actions CI/CD pipeline to automate model deployment and updates.</li>
+                <li>Implemented SSL/TLS encryption for secure communication with an Application Load Balancer.</li>
+                <li>Configured IAM roles and policies for secure access to AWS resources.</li>
+                <li>Made the application accessible via Docker running the OpenWebUI interface through a custom domain managed in Route 53</li>
+                <li>Ensured S3 model storage encryption for security compliance.</li>
+            </ul>
+            <em>Outcome:</em> Successfully deployed the DeepSeek Model R1, ensuring secure, reliable access via HTTPS with encrypted communication and automated deployment processes.
+        </li>
+        <li>
+            <strong>Distributed Logging & RabbitMQ Monitoring with Prometheus and Grafana on AWS</strong><br>
+            <em>Overview:</em> Achieved comprehensive monitoring and improved system reliability through enhanced distributed logging and real-time 3-node RabbitMQ metrics visualization with Prometheus and Grafana.<br>
+            <em>Key Components:</em>
+            <ul>
+                <li>Deployed a 3-node RabbitMQ cluster on AWS EC2 instances for high availability.</li>
+                <li>Integrated Prometheus to collect and store RabbitMQ metrics from all nodes.</li>
+                <li>Configured Grafana dashboards to visualize RabbitMQ metrics and system performance.</li>
+                <li>Set up distributed logging with AWS CloudWatch for centralized log management.</li>
+                <li>Ensured secure communication between components using SSL/TLS encryption.</li>
+                <li>Utilized Terraform for infrastructure provisioning and configuration.</li>
+            </ul>
+            <em>Outcome:</em> Achieved real-time RabbitMQ monitoring and improved system reliability with integrated logging and visualization, resulting in enhanced operational insight.
+        </li>
+        <li>
+            <strong>Kubernetes Deployment for a Node.js Application</strong><br>
+            <em>Overview:</em> Deployed a Node.js web application in Kubernetes using a Minikube cluster.<br>
+            <em>Key Features:</em>
+            <ul>
+                <li>Created a replication controller YAML file for scalable deployment.</li>
+                <li>Configured services to expose the application internally and externally.</li>
+                <li>Set up resource limits to optimize application performance and avoid over-provisioning.</li>
+            </ul>
+            <em>Outcome:</em> Reduced deployment time and increased reliability of application updates.
+        </li>  
+    </ol>
+
+    <h2>Professional Experience</h2>
+    <article>
+        <h3>SAP User Acceptance Tester</h3>
+        <p><em>Guidant Global – JCB World Headquarters, UK | May 2023 – December 2024</em></p>
+        <p> As a SAP User Acceptance Tester, I played a crucial role in ensuring the seamless transition and operational efficiency of JCB’s new SAP S/4 HANA system.
+            My primary responsibility was to validate and test the accuracy of data migrated from the legacy JOMS system to SAP S/4 HANA. This involved rigorous comparison and
+            validation of product codes to ensure they meet operational requirements and were fully functional within the new ERP environment.
+            Also, I coordinated the testing of end-to-end production stages and tracking planned orders across multiple plants and product lines.
+        </p>
+        <h4>Responsibilities and Achievements:</h4>
+        <ul>
+            <li>Integrated automated testing scripts using Python and PowerShell to streamline repetitive test cases and provided feedback on infrastructure configurations.</li>
+            <li>Collaborated with DevOps teams to manage testing environments on cloud platforms (AWS, Azure) and troubleshoot deployment issues in CI/CD pipelines.</li>
+            <li>Utilized monitoring tools like SAP Analytics Cloud, Grafana, and Prometheus to assess system performance during UAT, improving resource allocation by 20%.</li>
+            <li>Documented UAT processes and built dashboards for defect tracking and reporting, optimizing collaboration with development teams.</li>
+            <li>Provided feedback on infrastructure configurations, contributing to system scalability and reliability.</li>
+            <li>Collaborated with cross-functional teams to ensure seamless integration of SAP solutions, identifying and resolving defects to meet business requirements.</li>
+            <li>Improved testing efficiency by integrating automated scripts that reduced manual testing time by 30%, ensuring thorough coverage of SAP application functionality.</li>
+        </ul>
+    </article>
+
+    <article>
+        <h3>SAP Functional Analyst</h3>
+        <p><em>Wizcore Consulting, London, UK | October 2022 – May 2023</em></p>
+        <ul>
+            <li>Led efforts to automate SAP configuration tasks using Infrastructure as Code (IaC) tools like Terraform, reducing manual effort by 30%.</li>
+            <li>Supported the deployment of SAP modules in cloud environments, leveraging AWS services for seamless integration and testing.</li>
+            <li>Implemented API integrations to streamline business workflows, improving efficiency by automating key processes.</li>
+            <li>Developed CI/CD pipeline integrations for SAP module updates, ensuring faster and more reliable deployments.</li>
+            <li>Conducted security reviews for SAP configurations, applying IAM and role-based access control principles.</li>
+            <li>Collaborated with cross-functional teams to design, develop, and implement SAP solutions, ensuring alignment with business requirements and objectives.</li>
+            <li>Configured and tested SAP modules, including SD, MM, and FI/CO, to meet business needs and ensure seamless integration.</li>
+            <li>Developed and maintained detailed functional specifications and documentation, ensuring accurate knowledge transfer and future support.</li>
+        </ul>
+        
+    </article>
+
+    <article>
+        <h3>SAP Security & GRC Analyst</h3>
+        <p><em>Infotech Risks Security LLC, Lagos, Nigeria | September 2021 – October 2022</em></p>
+        <p>As a SAP Security & GRC Consultant  at Infotech Risks Security LLC, I played a key role in enhancing the security and compliance of different organisation’s SAP systems.
+            My responsibilities include implementing & customising SAP Access Control & Process control, configuring security settings, managing user access, and optimising authorization
+            processes to ensure efficient and secure operations. I collaborated with various stakeholders to define user permissions and performed regular audits to maintain high standards
+            of data integrity and regulatory compliance </p>
+        <h4>Responsiblities and Achievements</h4>
+        <ul>
+            <li>Designed and implemented comprehensive SAP security architectures, ensuring compliance with organizational policies, industry standards, and regulatory requirements.</li>
+            <li>Reviewed Access Risk Analysis workflows and Rule sets which resulted in identifying 45% Segregation of Duties (SoD), mitigating risk, and ensuring compliance.</li>
+            <li>Conducted risk assessments and vulnerability analyses to identify potential security threats, developing and implementing mitigation strategies to ensure SAP system integrity.</li>
+            <li>Configured and managed SAP role-based access controls, ensuring segregation of duties, least privilege access, and compliance with SoD requirements.</li>
+            <li>Developed and maintained SAP security policies, procedures, and guidelines, ensuring alignment with organizational governance, risk, and compliance (GRC) frameworks.</li>
+            <li>Collaborated with audit teams to ensure SAP security compliance, providing evidence and documentation to support audit requirements and addressing audit findings promptly.</li>
+        </ul>
+        
+    </article>
+    </section>
+
+    <section>
+        <h2>Education</h2>
+        <ul>
+            <li><strong>IT Support & Networking:</strong> ITCareerSwitch, UK | December 2023 - August 2024</li>
+            <li><strong>Bachelor of Science (Honours), Industrial Engineering:</strong> University of Ibadan, Nigeria | February 2013 - February 2018</li>
+        </ul>
+    </section>
+
+    <h2>SKILLS & TOOLS</h2>
+    <ul>
+        <li>Cloud Platforms:</strong> AWS, Azure, GCP</li>
+        <li>Containerization & Orchestration:</strong> Docker & Kubernetes</li>
+        <li>Operating System:</strong> Linux, Windows</li>
+        <li>Infrastructure as Code (IaC):</strong> Terraform, CloudFormation</li>
+        <li>Configuration Management:</strong> Ansible, Puppet, Chef</li>
+        <li>CI/CD Pipelines:</strong> GitHub Actions, Jenkins, GitLab CI/CD</li>
+        <li>Scripting and Automation:</strong> Python, Bash, PowerShell</li>
+        <li>Monitoring and Logging:</strong> Prometheus, Grafana, Splunk</li>
+        <li>Version Control:</strong> Git/GitHub</li>
+        <li>Security Best Practices:</strong> IAM, Security groups, WAF, API Security, AWS Shield & GuardDuty</li>
+        <li>Networking:</strong> DNS, VPNs, BGP, OSPF, EIGRP, DHCP, ICMP, TCP/IP, SSH</li>
+        <li>Soft Skills:</strong> Excellent Communication, Problem-solving, Collaboration & Adaptability</li>
+    </ul>
+    
+
+    <section>
+        <h2>Training & Certifications</h2>
+        <ul>
+            <li>AWS Solutions Architect Associate (December 2024) - validation code: e227b9e5ef6e4d4295364b35b51c244f</li>
+            <li>Cisco Certified Networking Associate (July 2024)</li>
+            <li>SAP Certified Application Associate - SAP S/4HANA Cloud (January 2024)</li>
+            <li>CompTIA Security+ (December 2023)</li>
+            <li>SAP – System Security & Authorizations - May 2022</li>
+            <li>Microsoft Certified: Azure Administrator Associate (May 2022)</li>
+        </ul>
+    </section>
+    </main>
+    <script>
+        async function updateVisitorCount() {
+            const apiEndpoint = "${api_gateway_url}/visitors";
+
+            try {
+                const response = await fetch(apiEndpoint);
+                if (!response.ok) {
+                    throw new Error(`API returned status: $${response.status}`);
+                }
+
+                const data = await response.json();
+                console.log("API Response:", data);
+
+                if (data && data.count) {
+                    document.getElementById("visitor-counter").innerText = `Visitor Count: $${data.count}`;
+                } else {
+                    console.error("Invalid data format:", data);
+                }
+            } catch (error) {
+                console.error("Error fetching visitor count:", error);
+            }
+        }
+
+        window.onload = updateVisitorCount;
+    </script>
+
+    <script>
+        /* Javascript to update last visit time on the site */
+           function updateTime() {
+               const now = new Date();
+               const formattedTime = now.toLocaleString();
+               document.getElementById('update-time').textContent = formattedTime;
+           }
+
+           // Initial call to set the time when the page loads
+           updateTime();
+
+           // Optional: Update the time every minute
+           setInterval(updateTime, 60000);
+    </script>
+</body>
+</html>

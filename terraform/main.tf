@@ -74,22 +74,30 @@ resource "aws_s3_bucket_policy" "cloud_resume_policy" {
   })
 }
 
-/*
-# Upload web content to S3 bucket
+# Read and replace placeholder in the HTML file dynamically
+data "template_file" "cloud_resume_html" {
+  template = file("${path.module}/cloud-resume.html")
+
+  vars = {
+    api_gateway_url = "https://${aws_api_gateway_rest_api.cloud_resume_api.id}.execute-api.${var.region}.amazonaws.com/${aws_api_gateway_stage.cloud_resume_stage.stage_name}"
+  }
+}
+
+# Upload the updated HTML file to S3 after API Gateway is created
 resource "aws_s3_object" "cloud_resume_html" {
-  bucket = aws_s3_bucket.cloud_resume_bucket.id
-  key    = "cloud-resume.html"
-  source = "C:/Users/MY-PC/OneDrive/Desktop/Cloud_DevOps_Engr/Projects/Cloud Resume/cloud-resume.html"
-  content_type = "text/html" # Tell browser the content type as HTML
+  bucket              = aws_s3_bucket.cloud_resume_bucket.id
+  key                 = "cloud-resume.html"
+  content             = data.template_file.cloud_resume_html.rendered
+  content_type        = "text/html"
   content_disposition = "inline"
 
+  depends_on = [aws_api_gateway_stage.cloud_resume_stage]
 
   tags = {
     Name        = "Cloud Resume HTML"
     Environment = "Production"
   }
 }
-*/
 
 
 # Cloudfront Origin Access Control (OAC)
