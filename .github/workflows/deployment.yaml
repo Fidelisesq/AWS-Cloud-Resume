@@ -26,14 +26,14 @@ jobs:
         shell: bash
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v3
 
       - name: Set AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
-            aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-            aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-            aws-region: ${{ secrets.AWS_DEFAULT_REGION }}
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_DEFAULT_REGION }}
 
       - name: Set up Terraform
         uses: hashicorp/setup-terraform@v2
@@ -42,7 +42,7 @@ jobs:
 
       - name: Create terraform.tfvars
         run: |
-          cat <<EOF > terraform.tfvars
+          cat <<EOF > terraform/terraform.tfvars
           acm_certificate_arn = "${{ secrets.CERTIFICATE_ARN }}"
           hosted_zone_id = "${{ secrets.HOSTED_ZONE_ID }}"
           aws_access_key_id = "${{ secrets.AWS_ACCESS_KEY_ID }}"
@@ -53,24 +53,32 @@ jobs:
           domain_name = "${{ secrets.DOMAIN_NAME }}"
           email_address = "${{ secrets.EMAIL_ADDRESS }}"
           pagerduty_integration_url = "${{ secrets.PAGERDUTY_INTEGRATION_KEY }}"
-          pagerduty_integration_key ="${{ secrets.PAGERDUTY_INTEGRATION_URL }}"
+          pagerduty_integration_key = "${{ secrets.PAGERDUTY_INTEGRATION_URL }}"
           slack_webhook_url = "${{ secrets.PAGERDUTY_INTEGRATION_URL }}"
           EOF  
 
       - name: Terraform Init
         id: init
+        env:
+          TF_LOG: DEBUG
         run: cd terraform && terraform init
 
       - name: Terraform Validate
         id: validate
+        env:
+          TF_LOG: DEBUG
         run: cd terraform && terraform validate
 
       - name: Terraform Plan
         id: plan
+        env:
+          TF_LOG: DEBUG
         run: cd terraform && terraform plan -out=tfplan
 
       - name: Terraform Apply
         id: apply
+        env:
+          TF_LOG: DEBUG
         run: cd terraform && terraform apply -auto-approve tfplan
 
   infrastructure-cleanup:
@@ -89,9 +97,9 @@ jobs:
       - name: Set AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
-            aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-            aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-            aws-region: ${{ secrets.AWS_DEFAULT_REGION }}    
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_DEFAULT_REGION }}
 
       - name: Set up Terraform
         uses: hashicorp/setup-terraform@v2
@@ -100,7 +108,7 @@ jobs:
 
       - name: Create terraform.tfvars
         run: |
-          cat <<EOF > terraform.tfvars
+          cat <<EOF > terraform/terraform.tfvars
           acm_certificate_arn = "${{ secrets.CERTIFICATE_ARN }}"
           hosted_zone_id = "${{ secrets.HOSTED_ZONE_ID }}"
           aws_access_key_id = "${{ secrets.AWS_ACCESS_KEY_ID }}"
@@ -111,14 +119,18 @@ jobs:
           domain_name = "${{ secrets.DOMAIN_NAME }}"
           email_address = "${{ secrets.EMAIL_ADDRESS }}"
           pagerduty_integration_url = "${{ secrets.PAGERDUTY_INTEGRATION_KEY }}"
-          pagerduty_integration_key ="${{ secrets.PAGERDUTY_INTEGRATION_URL }}"
+          pagerduty_integration_key = "${{ secrets.PAGERDUTY_INTEGRATION_URL }}"
           slack_webhook_url = "${{ secrets.PAGERDUTY_INTEGRATION_URL }}"
           EOF  
 
       - name: Terraform Init
         id: init
+        env:
+          TF_LOG: DEBUG
         run: cd terraform && terraform init
 
       - name: Terraform Destroy
         id: destroy
+        env:
+          TF_LOG: DEBUG
         run: cd terraform && terraform destroy -auto-approve
