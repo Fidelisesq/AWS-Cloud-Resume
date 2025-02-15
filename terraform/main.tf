@@ -333,14 +333,13 @@ resource "aws_api_gateway_deployment" "cloud_resume_deployment" {
 }
 
 #API Gateway Stage + Enabled Logging & detailed Metrics
-# API Gateway Stage with Logging, Metrics & Tracing
 resource "aws_api_gateway_stage" "cloud_resume_stage" {
   deployment_id = aws_api_gateway_deployment.cloud_resume_deployment.id
   rest_api_id   = aws_api_gateway_rest_api.cloud_resume_api.id
   stage_name    = "prod"
 
   access_log_settings {
-    destination_arn = aws_cloudwatch_log_group.api_gw_logs.arn
+    destination_arn = aws_cloudwatch_log_group.api_gateway_log_group.arn  # ✅ Corrected Reference
     format = jsonencode({
       requestId       = "$context.requestId"
       ip              = "$context.identity.sourceIp"
@@ -352,19 +351,21 @@ resource "aws_api_gateway_stage" "cloud_resume_stage" {
     })
   }
 
-  default_route_settings {
-    metrics_enabled = true
-    logging_level   = "INFO"
+  method_settings {
+    metrics_enabled    = true
     data_trace_enabled = true
+    logging_level      = "INFO"
+
+    resource_path = "/*"
+    http_method   = "*"
   }
 
   tags = {
     Environment = "Production"
   }
 
-  depends_on = [aws_cloudwatch_log_group.api_gw_logs]
+  depends_on = [aws_cloudwatch_log_group.api_gateway_log_group] 
 }
-
 
 
 # Permission for API Gateway to invoke Lambda
