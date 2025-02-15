@@ -332,12 +332,40 @@ resource "aws_api_gateway_deployment" "cloud_resume_deployment" {
   ]
 }
 
-#API Gateway Stage
+#API Gateway Stage + Enabled Logging & detailed Metrics
+# API Gateway Stage with Logging, Metrics & Tracing
 resource "aws_api_gateway_stage" "cloud_resume_stage" {
   deployment_id = aws_api_gateway_deployment.cloud_resume_deployment.id
   rest_api_id   = aws_api_gateway_rest_api.cloud_resume_api.id
   stage_name    = "prod"
+
+  access_log_settings {
+    destination_arn = aws_cloudwatch_log_group.api_gw_logs.arn
+    format = jsonencode({
+      requestId       = "$context.requestId"
+      ip              = "$context.identity.sourceIp"
+      requestTime     = "$context.requestTime"
+      httpMethod      = "$context.httpMethod"
+      resourcePath    = "$context.resourcePath"
+      status          = "$context.status"
+      responseLength  = "$context.responseLength"
+    })
+  }
+
+  default_route_settings {
+    metrics_enabled = true
+    logging_level   = "INFO"
+    data_trace_enabled = true
+  }
+
+  tags = {
+    Environment = "Production"
+  }
+
+  depends_on = [aws_cloudwatch_log_group.api_gw_logs]
 }
+
+
 
 # Permission for API Gateway to invoke Lambda
 resource "aws_lambda_permission" "allow_apigateway" {
@@ -393,6 +421,35 @@ resource "aws_cloudwatch_log_group" "api_gateway_log_group" {
   name              = "/aws/apigateway/CloudResumeAPI"
   retention_in_days = 14
 }
+
+#Grant API Gateway Permissions to Write to CloudWatch Logs
+resource "aws_iam_role" "api_gw_cloudwatch_role" {
+  name = "APIGatewayCloudWatchLogsRole"
+
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [{
+      Effect = "Allow"
+      Principal = {
+        Service = "apigateway.amazonaws.com"
+      }
+      Action = "sts:AssumeRole"
+    }]
+  })
+}
+
+resource "aws_iam_policy_attachment" "api_gw_logging_policy" {
+  name       = "ApiGatewayLoggingPolicy"
+  roles      = [aws_iam_role.api_gw_cloudwatch_role.name]
+  policy_arn = "arn:aws:iam::aws:policy/service-role/AmazonAPIGatewayPushToCloudWatchLogs"
+}
+
+#Attach the IAM Role to API Gateway
+resource "aws_api_gateway_account" "api_logging" {
+  cloudwatch_role_arn = aws_iam_role.api_gw_cloudwatch_role.arn
+}
+
+
 
 # SNS topic resource for notifications
 resource "aws_sns_topic" "api_alerts" {
@@ -496,7 +553,7 @@ resource "aws_iam_role" "sns_to_slack_lambda_role" {
   })
 }
 
-# Attach Policies to Allow Lambda to Read from SNS and Write Logs
+# Attach Policies to Allow Lambda to Read from SNS and Write Logs to slack
 resource "aws_iam_role_policy" "sns_to_slack_policy" {
   name = "sns_to_slack_policy"
   role = aws_iam_role.sns_to_slack_lambda_role.id
