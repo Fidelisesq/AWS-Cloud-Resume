@@ -355,7 +355,10 @@ resource "aws_api_gateway_stage" "cloud_resume_stage" {
     Environment = "Production"
   }
 
-  depends_on = [aws_cloudwatch_log_group.api_gateway_log_group] 
+  depends_on = [
+    aws_api_gateway_account.api_logging,
+    aws_cloudwatch_log_group.api_gateway_log_group
+    ] 
 }
 
 #Enabled Logging & detailed Metrics for API Gateway Stage
@@ -381,45 +384,6 @@ resource "aws_lambda_permission" "allow_apigateway" {
   source_arn    = "${aws_api_gateway_rest_api.cloud_resume_api.execution_arn}/*/*"
 }
 
-
-#AWS WAF resource to front Cloudfront
-resource "aws_wafv2_web_acl" "cloudfront_waf" {
-  name        = "cloudfront-waf"
-  description = "WAF for CloudFront"
-  scope       = "CLOUDFRONT"
-
-  default_action {
-    allow {}
-  }
-
-  rule {
-    name     = "RateLimitRule"
-    priority = 1
-
-    action {
-      block {}
-    }
-
-    statement {
-      rate_based_statement {
-        limit              = 2000 # Adjust based on your expected traffic
-        aggregate_key_type = "IP"
-      }
-    }
-
-    visibility_config {
-      cloudwatch_metrics_enabled = true
-      metric_name                = "RateLimitRule"
-      sampled_requests_enabled   = true
-    }
-  }
-
-  visibility_config {
-    cloudwatch_metrics_enabled = true
-    metric_name                = "CloudFrontWAF"
-    sampled_requests_enabled   = true
-  }
-}
 
 # CloudWatch Log Group for API Gateway (optional)
 resource "aws_cloudwatch_log_group" "api_gateway_log_group" {
@@ -622,6 +586,44 @@ resource "aws_lambda_permission" "allow_sns" {
   source_arn    = "arn:aws:sns:us-east-1:${data.aws_caller_identity.current.account_id}:aws_sns_topic.api_alerts"
 }
 
+#AWS WAF resource to front Cloudfront
+resource "aws_wafv2_web_acl" "cloudfront_waf" {
+  name        = "cloudfront-waf"
+  description = "WAF for CloudFront"
+  scope       = "CLOUDFRONT"
+
+  default_action {
+    allow {}
+  }
+
+  rule {
+    name     = "RateLimitRule"
+    priority = 1
+
+    action {
+      block {}
+    }
+
+    statement {
+      rate_based_statement {
+        limit              = 2000 # Adjust based on your expected traffic
+        aggregate_key_type = "IP"
+      }
+    }
+
+    visibility_config {
+      cloudwatch_metrics_enabled = true
+      metric_name                = "RateLimitRule"
+      sampled_requests_enabled   = true
+    }
+  }
+
+  visibility_config {
+    cloudwatch_metrics_enabled = true
+    metric_name                = "CloudFrontWAF"
+    sampled_requests_enabled   = true
+  }
+}
 
 #Terraform Backend (S3 for State MAnagement)
 terraform {
