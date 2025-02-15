@@ -74,6 +74,7 @@ resource "aws_s3_bucket_policy" "cloud_resume_policy" {
   })
 }
 
+
 # Read and replace placeholder in the HTML file dynamically
 data "template_file" "cloud_resume_html" {
   template = file("${path.module}/cloud-resume.html")
