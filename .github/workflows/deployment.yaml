@@ -54,8 +54,8 @@ jobs:
           bucket_name = "${{ secrets.BUCKET_NAME }}"
           domain_name = "${{ secrets.DOMAIN_NAME }}"
           email_address = "${{ secrets.EMAIL_ADDRESS }}"
-          pagerduty_integration_url = "${{ secrets.PAGERDUTY_INTEGRATION_KEY }}"
-          pagerduty_integration_key = "${{ secrets.PAGERDUTY_INTEGRATION_URL }}"
+          pagerduty_integration_url = "${{ secrets.PAGERDUTY_INTEGRATION_URL }}"
+          pagerduty_integration_key = "${{ secrets.PAGERDUTY_INTEGRATION_KEY }}"
           slack_webhook_url = "${{ secrets.PAGERDUTY_INTEGRATION_URL }}"
           EOF
 
@@ -120,8 +120,8 @@ jobs:
           bucket_name = "${{ secrets.BUCKET_NAME }}"
           domain_name = "${{ secrets.DOMAIN_NAME }}"
           email_address = "${{ secrets.EMAIL_ADDRESS }}"
-          pagerduty_integration_url = "${{ secrets.PAGERDUTY_INTEGRATION_KEY }}"
-          pagerduty_integration_key = "${{ secrets.PAGERDUTY_INTEGRATION_URL }}"
+          pagerduty_integration_url = "${{ secrets.PAGERDUTY_INTEGRATION_URL }}"
+          pagerduty_integration_key = "${{ secrets.PAGERDUTY_INTEGRATION_KEY }}"
           slack_webhook_url = "${{ secrets.PAGERDUTY_INTEGRATION_URL }}"
           EOF
 
