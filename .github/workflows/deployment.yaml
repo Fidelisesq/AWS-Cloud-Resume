@@ -35,19 +35,19 @@ jobs:
 
       - name: Terraform Init
         id: init
-        run: terraform init
+        run: cd terraform && terraform init
 
       - name: Terraform Validate
         id: validate
-        run: terraform validate
+        run: cd terraform && terraform validate
 
       - name: Terraform Plan
         id: plan
-        run: terraform plan -out=tfplan
+        run: cd terraform && terraform plan -out=tfplan
 
       - name: Terraform Apply
         id: apply
-        run: terraform apply -auto-approve tfplan
+        run: cd terraform && terraform apply -auto-approve tfplan
 
   infrastructure-cleanup:
     if: >-
@@ -69,8 +69,8 @@ jobs:
 
       - name: Terraform Init
         id: init
-        run: terraform init
+        run: cd terraform && terraform init
 
       - name: Terraform Destroy
         id: destroy
-        run: terraform destroy -auto-approve
+        run: cd terraform && terraform destroy -auto-approve
