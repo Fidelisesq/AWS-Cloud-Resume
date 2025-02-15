@@ -332,7 +332,7 @@ resource "aws_api_gateway_deployment" "cloud_resume_deployment" {
   ]
 }
 
-#API Gateway Stage + Enabled Logging & detailed Metrics
+#API Gateway Stage 
 resource "aws_api_gateway_stage" "cloud_resume_stage" {
   deployment_id = aws_api_gateway_deployment.cloud_resume_deployment.id
   rest_api_id   = aws_api_gateway_rest_api.cloud_resume_api.id
@@ -351,20 +351,24 @@ resource "aws_api_gateway_stage" "cloud_resume_stage" {
     })
   }
 
-  method_settings {
-    metrics_enabled    = true
-    data_trace_enabled = true
-    logging_level      = "INFO"
-
-    resource_path = "/*"
-    http_method   = "*"
-  }
-
   tags = {
     Environment = "Production"
   }
 
   depends_on = [aws_cloudwatch_log_group.api_gateway_log_group] 
+}
+
+#Enabled Logging & detailed Metrics for API Gateway Stage
+resource "aws_api_gateway_method_settings" "cloud_resume_metrics" {
+  rest_api_id = aws_api_gateway_rest_api.cloud_resume_api.id
+  stage_name  = aws_api_gateway_stage.cloud_resume_stage.stage_name
+
+  method_path = "visitors/GET"
+  settings {
+    metrics_enabled    = true
+    data_trace_enabled = true
+    logging_level      = "INFO"
+  }
 }
 
 
