@@ -525,7 +525,7 @@ resource "aws_iam_role" "sns_to_slack_lambda_role" {
   })
 }
 
-# Attach Policies to Allow Lambda to Read from SNS and Write Logs to slack
+# Attach Policies to Allow Slack Lambda to Read from SNS and Write Logs to slack
 resource "aws_iam_role_policy" "sns_to_slack_policy" {
   name = "sns_to_slack_policy"
   role = aws_iam_role.sns_to_slack_lambda_role.id
@@ -540,22 +540,23 @@ resource "aws_iam_role_policy" "sns_to_slack_policy" {
       },
       {
         Effect   = "Allow",
-        Action   = "logs:CreateLogStream",
+        Action   = ["logs:CreateLogStream", "logs:PutLogEvents"],
         Resource = "arn:aws:logs:*:*:*"
       },
       {
         Effect   = "Allow",
-        Action   = "logs:PutLogEvents",
-        Resource = "arn:aws:logs:*:*:*"
-      },
-      {
-        Effect   = "Allow",
-        Action   = "sns:Subscribe",
+        Action   = ["sns:Subscribe", "sns:Receive"],
         Resource = "${aws_sns_topic.api_alerts.arn}"
+      },
+      {
+        Effect   = "Allow",
+        Action   = "lambda:InvokeFunction",
+        Resource = "${aws_lambda_function.sns_to_slack.arn}"
       }
     ]
   })
 }
+
 
 # Create Lambda_to_Slack Function
 resource "aws_lambda_function" "sns_to_slack" {
