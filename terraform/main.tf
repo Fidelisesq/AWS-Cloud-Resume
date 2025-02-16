@@ -515,15 +515,33 @@ resource "aws_iam_role" "sns_to_slack_lambda_role" {
     Version = "2012-10-17",
     Statement = [
       {
-        Effect = "Allow",
+        Effect   = "Allow",
         Principal = {
           Service = "lambda.amazonaws.com"
         },
-        Action = "sts:AssumeRole"
+        Action   = "sts:AssumeRole"
       }
     ]
   })
 }
+
+#Plicy to allow Lambda Read from Secret Manager
+resource "aws_iam_role_policy" "sns_to_slack_lambda_role_policy" {
+  name = "sns-to-slack-lambda-policy"
+  role = aws_iam_role.sns_to_slack_lambda_role.name
+
+  policy = jsonencode({
+    Version = "2012-10-17",
+    Statement = [
+      {
+        Effect   = "Allow",
+        Action   = "secretsmanager:GetSecretValue",
+        Resource = aws_secretsmanager_secret.slack_webhook_url.arn
+      }
+    ]
+  })
+}
+
 
 # Attach Policies to Allow Slack Lambda to Read from SNS and Write Logs to slack
 resource "aws_iam_role_policy" "sns_to_slack_policy" {
@@ -558,9 +576,9 @@ resource "aws_iam_role_policy" "sns_to_slack_policy" {
 }
 
 
-# Create Lambda_to_Slack Function
+# Create Lambda_to_Slack Function & retrieve slack webhookurl from AWS Secret Manager
 resource "aws_lambda_function" "sns_to_slack" {
-  filename      = "lambda_to_slack.zip" # Zip your Python script before deployment
+  filename      = "lambda_to_slack.zip"  # Zip your Python script before deployment
   function_name = "SNS-to-Slack"
   role          = aws_iam_role.sns_to_slack_lambda_role.arn
   handler       = "lambda_function.lambda_handler"
@@ -569,10 +587,29 @@ resource "aws_lambda_function" "sns_to_slack" {
 
   environment {
     variables = {
-      slack_webhook_url = "https://hooks.slack.com/services/your-webhook-url"
+      SLACK_WEBHOOK_SECRET_NAME = aws_secretsmanager_secret.slack_webhook_url.name  # Reference to the secret
     }
   }
+
+  # Lambda function's permission to access the secret (already done via IAM role policy)
+  depends_on = [
+    aws_secretsmanager_secret.slack_webhook_url
+  ]
 }
+
+#Store the Webhook URL in AWS Secrets Manager
+resource "aws_secretsmanager_secret" "slack_webhook_url" {
+  name        = "slack-webhook-url"
+  description = "Slack Webhook URL for Lambda"
+}
+
+resource "aws_secretsmanager_secret_version" "slack_webhook_url_version" {
+  secret_id     = aws_secretsmanager_secret.slack_webhook_url.id
+  secret_string = jsonencode({
+    slack_webhook_url = "https://hooks.slack.com/services/your-webhook-url"
+  })
+}
+
 
 # Subscribe Lambda to SNS Topic
 resource "aws_sns_topic_subscription" "sns_to_slack_subscription" {
