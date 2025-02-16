@@ -34,8 +34,8 @@ jobs:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ secrets.AWS_DEFAULT_REGION }}
-        env:
-          TF_LOG: DEBUG
+        #env:
+          #TF_LOG: DEBUG
 
       - name: Set up Terraform
         uses: hashicorp/setup-terraform@v2
@@ -69,14 +69,12 @@ jobs:
 
       - name: Terraform Plan
         id: plan
-        env:
-          TF_LOG: DEBUG
         run: cd terraform && terraform plan -out=tfplan
 
       - name: Terraform Apply
         id: apply
-        env:
-          TF_LOG: DEBUG
+        #env:
+          #TF_LOG: DEBUG
         run: cd terraform && terraform apply -auto-approve tfplan
 
   infrastructure-cleanup:
@@ -123,12 +121,10 @@ jobs:
 
       - name: Terraform Init
         id: init
-        env:
-          TF_LOG: DEBUG
         run: cd terraform && terraform init
 
       - name: Terraform Destroy
         id: destroy
-        env:
-          TF_LOG: DEBUG
+        #env:
+          #TF_LOG: DEBUG
         run: cd terraform && terraform destroy -auto-approve
