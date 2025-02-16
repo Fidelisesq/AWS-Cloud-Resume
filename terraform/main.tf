@@ -429,7 +429,7 @@ resource "aws_sns_topic" "api_alerts" {
 }
 
 
-#Allow HTTPS subscription - PageDudy
+#Allow HTTPS subscription  to SNS- PageDudy
 resource "aws_sns_topic_policy" "api_alerts_policy" {
   arn = aws_sns_topic.api_alerts.arn
   policy = jsonencode({
@@ -438,7 +438,7 @@ resource "aws_sns_topic_policy" "api_alerts_policy" {
       {
         Effect    = "Allow"
         Principal = "*"
-        Action    = "SNS:Subscribe"
+        Action    = ["SNS:Subscribe", "SNS:Publish"],
         Resource  = aws_sns_topic.api_alerts.arn
         Condition = {
           StringEquals = {
