@@ -389,6 +389,11 @@ resource "aws_lambda_permission" "allow_apigateway" {
 resource "aws_cloudwatch_log_group" "api_gateway_log_group" {
   name              = "/aws/apigateway/CloudResumeAPI"
   retention_in_days = 14
+  
+  #Terraform avoid deletion if API Gateway recreates the Log_Group
+  lifecycle {
+    ignore_changes = [name]
+  }
 }
 
 #Grant API Gateway Permissions to Write to CloudWatch Logs
@@ -417,8 +422,6 @@ resource "aws_iam_policy_attachment" "api_gw_logging_policy" {
 resource "aws_api_gateway_account" "api_logging" {
   cloudwatch_role_arn = aws_iam_role.api_gw_cloudwatch_role.arn
 }
-
-
 
 # SNS topic resource for notifications
 resource "aws_sns_topic" "api_alerts" {
