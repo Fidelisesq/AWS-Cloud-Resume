@@ -586,7 +586,8 @@ resource "aws_lambda_permission" "allow_sns" {
   action        = "lambda:InvokeFunction"
   function_name = aws_lambda_function.sns_to_slack.function_name
   principal     = "sns.amazonaws.com"
-  source_arn    = "arn:aws:sns:us-east-1:${data.aws_caller_identity.current.account_id}:aws_sns_topic.api_alerts"
+  source_arn = aws_sns_topic.api_alerts.arn
+  #source_arn    = "arn:aws:sns:us-east-1:${data.aws_caller_identity.current.account_id}:aws_sns_topic.api_alerts"
 }
 
 #AWS WAF resource to front Cloudfront
