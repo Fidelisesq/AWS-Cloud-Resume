@@ -560,7 +560,7 @@ resource "aws_iam_role_policy" "sns_to_slack_policy" {
 
 # Create Lambda_to_Slack Function
 resource "aws_lambda_function" "sns_to_slack" {
-  filename      = "visitor_counter_lambda.zip" # Zip your Python script before deployment
+  filename      = "lambda_to_slack.zip" # Zip your Python script before deployment
   function_name = "SNS-to-Slack"
   role          = aws_iam_role.sns_to_slack_lambda_role.arn
   handler       = "lambda_function.lambda_handler"
