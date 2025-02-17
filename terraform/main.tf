@@ -339,7 +339,7 @@ resource "aws_api_gateway_stage" "cloud_resume_stage" {
   stage_name    = "prod"
 
   access_log_settings {
-    destination_arn = aws_cloudwatch_log_group.api_gateway_log_group.arn  # ✅ Corrected Reference
+    destination_arn = aws_cloudwatch_log_group.api_gateway_log_group.arn  
     format = jsonencode({
       requestId       = "$context.requestId"
       ip              = "$context.identity.sourceIp"
