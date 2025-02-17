@@ -495,7 +495,7 @@ resource "aws_iam_role_policy_attachment" "sns_lambda_secrets_access" {
 #IAM Policy for PagerDuty Lambda to Access Secret Manager & Make Requests to PagerDuty API
 resource "aws_iam_policy" "lambda_sns_pagerduty_access" {
   name        = "lambda_sns_pagerduty_access"
-  description = "Allow Lambda to access SNS and send events to PagerDuty"
+  description = "Allow Lambda to access SNS, send events to PagerDuty, and write to CloudWatch Logs"
 
   policy = jsonencode({
     Version = "2012-10-17"
@@ -519,10 +519,20 @@ resource "aws_iam_policy" "lambda_sns_pagerduty_access" {
         Effect   = "Allow"
         Action   = "execute-api:Invoke"  # Permission for making API calls to PagerDuty
         Resource = "arn:aws:apigateway:*::/*"  # Allow Lambda to call any API
+      },
+      {
+        Effect   = "Allow"
+        Action   = [
+          "logs:CreateLogGroup",
+          "logs:CreateLogStream",
+          "logs:PutLogEvents"
+        ]
+        Resource = "arn:aws:logs:*:*:*"  # Allow Lambda to write logs to any CloudWatch Log group/stream
       }
     ]
   })
 }
+
 
 
 # Lambda function for PagerDuty integration
@@ -723,7 +733,7 @@ resource "aws_lambda_permission" "allow_sns" {
 }
 
 
-# Subscribe Lambda to SNS Topic
+# Subscribe Slack Lambda to SNS Topic
 resource "aws_sns_topic_subscription" "sns_to_slack_subscription" {
   topic_arn = aws_sns_topic.api_alerts.arn
   protocol  = "lambda"
