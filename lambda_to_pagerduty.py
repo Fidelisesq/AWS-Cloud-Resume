@@ -1,13 +1,14 @@
 import json
 import requests
 import boto3
+import os  # Import os to access environment variables
 
 # Initialize clients
 secrets_client = boto3.client('secretsmanager')
 
 def lambda_handler(event, context):
-    # Retrieve the PagerDuty Integration URL from Secrets Manager
-    secret_name = "pagerduty_integration_url"
+    # Retrieve the PagerDuty Integration URL from Secrets Manager using environment variable for secret ARN
+    secret_name = os.environ['PAGERDUTY_SECRET_ARN']
     region_name = "us-east-1"
     
     try:
