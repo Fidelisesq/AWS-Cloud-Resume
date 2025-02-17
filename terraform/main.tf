@@ -493,7 +493,7 @@ resource "aws_iam_role" "sns_to_pagerduty_lambda_role" {
 
 # IAM policy attachement for PagerDuty Lambda
 resource "aws_iam_role_policy_attachment" "sns_lambda_secrets_access" {
-  policy_arn = aws_iam_policy.lambda_secrets_manager_access.arn
+  policy_arn = aws_iam_policy.lambda_sns_pagerduty_access.arn
   role       = aws_iam_role.sns_to_pagerduty_lambda_role.name
 }
 
