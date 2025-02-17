@@ -570,7 +570,15 @@ resource "aws_iam_role_policy" "sns_to_slack_policy" {
         Effect   = "Allow",
         Action   = "lambda:InvokeFunction",
         Resource = "${aws_lambda_function.sns_to_slack.arn}"
+      },
+
+      {
+        # this policy allows Lambda to publish messages to SNS
+        Effect   = "Allow",
+        Action   = "sns:Publish",
+        Resource = "${aws_sns_topic.api_alerts.arn}"
       }
+
     ]
   })
 }
