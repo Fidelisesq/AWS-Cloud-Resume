@@ -469,9 +469,12 @@ resource "aws_secretsmanager_secret_version" "pagerduty_integration_url_value" {
 
 
 #PageDuty subscription to SNS topic & retrieve integration URL from Secrets Manager
+/*
 data "aws_secretsmanager_secret_version" "pagerduty_integration_url" {
   secret_id = aws_secretsmanager_secret.pagerduty_integration_url.id
 }
+*/
+
 
 #IAM Role for PagerDuty Lambda
 resource "aws_iam_role" "sns_to_pagerduty_lambda_role" {
