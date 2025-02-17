@@ -525,7 +525,7 @@ resource "aws_iam_role" "sns_to_slack_lambda_role" {
   })
 }
 
-#Plicy to allow Lambda Read from Secret Manager
+#Policy to allow Lambda Read from Secret Manager
 resource "aws_iam_role_policy" "sns_to_slack_lambda_role_policy" {
   name = "sns-to-slack-lambda-policy"
   role = aws_iam_role.sns_to_slack_lambda_role.name
@@ -611,12 +611,6 @@ resource "aws_secretsmanager_secret_version" "slack_webhook_url_version" {
 }
 
 
-# Subscribe Lambda to SNS Topic
-resource "aws_sns_topic_subscription" "sns_to_slack_subscription" {
-  topic_arn = aws_sns_topic.api_alerts.arn
-  protocol  = "lambda"
-  endpoint  = aws_lambda_function.sns_to_slack.arn
-}
 
 # Grant SNS permission to invoke Lambda
 resource "aws_lambda_permission" "allow_sns" {
@@ -625,7 +619,16 @@ resource "aws_lambda_permission" "allow_sns" {
   function_name = aws_lambda_function.sns_to_slack.function_name
   principal     = "sns.amazonaws.com"
   source_arn = aws_sns_topic.api_alerts.arn
-  #source_arn    = "arn:aws:sns:us-east-1:${data.aws_caller_identity.current.account_id}:aws_sns_topic.api_alerts"
+  depends_on    = [aws_lambda_function.sns_to_slack]
+}
+
+
+# Subscribe Lambda to SNS Topic
+resource "aws_sns_topic_subscription" "sns_to_slack_subscription" {
+  topic_arn = aws_sns_topic.api_alerts.arn
+  protocol  = "lambda"
+  endpoint  = aws_lambda_function.sns_to_slack.arn
+  depends_on = [aws_lambda_permission.allow_sns] #Waits for Lambda perssion before subscription
 }
 
 #AWS WAF resource to front Cloudfront
