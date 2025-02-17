@@ -12,7 +12,9 @@ def lambda_handler(event, context):
     
     try:
         response = secrets_client.get_secret_value(SecretId=secret_name)
-        pagerduty_url = response['SecretString']  # The integration URL
+        secret_dict = json.loads(response['SecretString'])
+        pagerduty_url = secret_dict['pagerduty_integration_url']
+        integration_key = pagerduty_url.split('/')[4]  # Extract the integration key
     except Exception as e:
         print(f"Error retrieving secret: {e}")
         raise e
@@ -25,9 +27,9 @@ def lambda_handler(event, context):
         "payload": {
             "summary": message,
             "source": "AWS Lambda",
-            "severity": "critical"  # You can adjust severity as per your needs
+            "severity": "critical"  # Adjust severity if needed
         },
-        "routing_key": pagerduty_url,
+        "routing_key": integration_key,  # Use the integration key here
         "event_action": "trigger"
     }
 
