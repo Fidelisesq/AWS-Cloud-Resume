@@ -450,7 +450,6 @@ resource "aws_sns_topic_policy" "api_alerts_policy" {
   })
 }
 
-
 #Email subscription to SNS topic
 resource "aws_sns_topic_subscription" "email_alert" {
   topic_arn = aws_sns_topic.api_alerts.arn
@@ -458,11 +457,101 @@ resource "aws_sns_topic_subscription" "email_alert" {
   endpoint  = var.email_address
 }
 
-#PageDuty subscription to SNS topic
+#Store PagerDuty Integration URL in Secret Manager
+resource "aws_secretsmanager_secret" "pagerduty_integration_url" {
+  name = "pagerduty_integration_url"
+}
+
+resource "aws_secretsmanager_secret_version" "pagerduty_integration_url_value" {
+  secret_id     = aws_secretsmanager_secret.pagerduty_integration_url.id
+  secret_string = var.pagerduty_integration_url
+}
+
+
+#PageDuty subscription to SNS topic & retrieve integration URL from Secrets Manager
+data "aws_secretsmanager_secret_version" "pagerduty_integration_url" {
+  secret_id = aws_secretsmanager_secret.pagerduty_integration_url.id
+}
+
+#IAM Role for PagerDuty Lambda
+resource "aws_iam_role" "sns_to_pagerduty_lambda_role" {
+  name = "lambda_to_pagerduty_role"
+
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Action    = "sts:AssumeRole"
+        Effect    = "Allow"
+        Principal = {
+          Service = "lambda.amazonaws.com"
+        }
+      }
+    ]
+  })
+}
+
+# IAM policy attachement for PagerDuty Lambda
+resource "aws_iam_role_policy_attachment" "sns_lambda_secrets_access" {
+  policy_arn = aws_iam_policy.lambda_secrets_manager_access.arn
+  role       = aws_iam_role.sns_to_pagerduty_lambda_role.name
+}
+
+#IAM Policy for PagerDuty Lambda to Access Secret Manager & Make Requests to PagerDuty API
+resource "aws_iam_policy" "lambda_sns_pagerduty_access" {
+  name        = "lambda_sns_pagerduty_access"
+  description = "Allow Lambda to access SNS and send events to PagerDuty"
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect   = "Allow"
+        Action   = [
+          "sns:Subscribe",
+          "sns:Publish",
+          "sns:ListSubscriptions",
+          "sns:ListSubscriptionsByTopic"
+        ]
+        Resource = aws_sns_topic.api_alerts.arn
+      },
+      {
+        Effect   = "Allow"
+        Action   = "secretsmanager:GetSecretValue"
+        Resource = aws_secretsmanager_secret.pagerduty_integration_url.arn
+      },
+      {
+        Effect   = "Allow"
+        Action   = "execute-api:Invoke"  # Permission for making API calls to PagerDuty
+        Resource = "arn:aws:apigateway:*::/*"  # Allow Lambda to call any API
+      }
+    ]
+  })
+}
+
+
+# Lambda function for PagerDuty integration
+resource "aws_lambda_function" "lambda_to_pagerduty" {
+  filename         = "lambda_to_pagerduty.zip"  # Prebuilt zip in my terraform directory
+  function_name    = "lambda_to_pagerduty"      # Lambda name
+  role             = aws_iam_role.sns_to_pagerduty_lambda_role.arn
+  handler          = "lambda_to_pagerduty.lambda_handler"  
+  runtime          = "python3.9"  # Or your preferred runtime
+  source_code_hash = filebase64sha256("lambda_to_pagerduty.zip")  # Ensures Terraform tracks the zip file changes
+
+  environment {
+    variables = {
+      PAGERDUTY_SECRET_ARN = aws_secretsmanager_secret.pagerduty_integration_url.arn
+    }
+  }
+}
+
+#PagerDuty Lambda subscription to SNS
 resource "aws_sns_topic_subscription" "pagerduty_subscription" {
   topic_arn = aws_sns_topic.api_alerts.arn
-  protocol  = "https"
-  endpoint  = var.pagerduty_integration_url # PagerDuty Integration URL from terraform.tfvars
+  protocol  = "lambda"
+  endpoint  = aws_lambda_function.lambda_to_pagerduty.arn
+  depends_on = [aws_lambda_function.lambda_to_pagerduty]
 }
 
 
@@ -617,8 +706,6 @@ resource "aws_secretsmanager_secret_version" "slack_webhook_url_version" {
     slack_webhook_url = "https://hooks.slack.com/services/your-webhook-url"
   })
 }
-
-
 
 # Grant SNS permission to invoke Lambda
 resource "aws_lambda_permission" "allow_sns" {
