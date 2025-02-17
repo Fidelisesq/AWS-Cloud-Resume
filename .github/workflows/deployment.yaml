@@ -55,7 +55,7 @@ jobs:
           email_address = "${{ secrets.EMAIL_ADDRESS }}"
           pagerduty_integration_url = "${{ secrets.PAGERDUTY_INTEGRATION_URL }}"
           pagerduty_integration_key = "${{ secrets.PAGERDUTY_INTEGRATION_KEY }}"
-          slack_webhook_url = "${{ secrets.PAGERDUTY_INTEGRATION_URL }}"
+          slack_webhook_url = "${{ secrets.SLACK_WEBHOOK_URL }}"
           EOF
 
       - name: Terraform Init
@@ -114,7 +114,7 @@ jobs:
           email_address = "${{ secrets.EMAIL_ADDRESS }}"
           pagerduty_integration_url = "${{ secrets.PAGERDUTY_INTEGRATION_URL }}"
           pagerduty_integration_key = "${{ secrets.PAGERDUTY_INTEGRATION_KEY }}"
-          slack_webhook_url = "${{ secrets.PAGERDUTY_INTEGRATION_URL }}"
+          slack_webhook_url = "${{ secrets.SLACK_WEBHOOK_URL }}"
           EOF
 
       - name: Terraform Init
