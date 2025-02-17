@@ -192,7 +192,7 @@ resource "aws_lambda_function" "visitor_counter" {
   filename         = "visitor_counter_lambda.zip" # Prebuilt zip with your Python code
   function_name    = "VisitorCounter"
   role             = aws_iam_role.lambda_exec.arn
-  handler          = "lambda_function.lambda_handler"
+  handler          = "visitor_counter_lambda.lambda_handler"
   runtime          = "python3.9"
   source_code_hash = filebase64sha256("visitor_counter_lambda.zip")
 
