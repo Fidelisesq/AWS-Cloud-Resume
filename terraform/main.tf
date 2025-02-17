@@ -589,7 +589,7 @@ resource "aws_lambda_function" "sns_to_slack" {
   filename      = "lambda_to_slack.zip"  # Zip your Python script before deployment
   function_name = "SNS-to-Slack"
   role          = aws_iam_role.sns_to_slack_lambda_role.arn
-  handler       = "lambda_function.lambda_handler"
+  handler       = "lambda_to_slack.lambda_handler"
   runtime       = "python3.9"
   timeout       = 10
 
