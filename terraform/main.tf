@@ -468,14 +468,6 @@ resource "aws_secretsmanager_secret_version" "pagerduty_integration_url_value" {
 }
 
 
-#PageDuty subscription to SNS topic & retrieve integration URL from Secrets Manager
-/*
-data "aws_secretsmanager_secret_version" "pagerduty_integration_url" {
-  secret_id = aws_secretsmanager_secret.pagerduty_integration_url.id
-}
-*/
-
-
 #IAM Role for PagerDuty Lambda
 resource "aws_iam_role" "sns_to_pagerduty_lambda_role" {
   name = "lambda_to_pagerduty_role"
@@ -556,6 +548,16 @@ resource "aws_sns_topic_subscription" "pagerduty_subscription" {
   endpoint  = aws_lambda_function.lambda_to_pagerduty.arn
   depends_on = [aws_lambda_function.lambda_to_pagerduty]
 }
+
+#Ensure SNS can Invoke PageDuty_lambda
+resource "aws_lambda_permission" "allow_sns_invoke" {
+  statement_id  = "AllowExecutionFromSNS"
+  action        = "lambda:InvokeFunction"
+  function_name = aws_lambda_function.lambda_to_pagerduty.function_name
+  principal     = "sns.amazonaws.com"
+  source_arn    = aws_sns_topic.api_alerts.arn
+}
+
 
 
 #Cloud Watch Alarm for API Gateway
