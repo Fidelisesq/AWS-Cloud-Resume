@@ -457,6 +457,15 @@ resource "aws_sns_topic_subscription" "email_alert" {
   endpoint  = var.email_address
 }
 
+
+#Test PagerDuty Subscription Directly to SNS
+resource "aws_sns_topic_subscription" "pagerduty_subscription" {
+  topic_arn = aws_sns_topic.api_alerts.arn
+  protocol  = "https"
+  endpoint  = "https://events.eu.pagerduty.com/integration/960fc580fbc6410ad1851bce4dbebf44/enqueue"
+}
+
+
 #Store PagerDuty Integration URL in Secret Manager
 resource "aws_secretsmanager_secret" "pagerduty_integration_url" {
   name = "pagerduty_integration_url"
