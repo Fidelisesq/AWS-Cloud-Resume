@@ -463,6 +463,7 @@ resource "aws_sns_topic_subscription" "pagerduty_sub" {
   topic_arn = aws_sns_topic.api_alerts.arn
   protocol  = "https"
   endpoint  = "https://events.eu.pagerduty.com/integration/960fc580fbc6410ad1851bce4dbebf44/enqueue"
+  raw_message_delivery = true
 }
 
 
