@@ -459,7 +459,7 @@ resource "aws_sns_topic_subscription" "email_alert" {
 
 
 #Test PagerDuty Subscription Directly to SNS
-resource "aws_sns_topic_subscription" "pagerduty_subscription" {
+resource "aws_sns_topic_subscription" "pagerduty_sub" {
   topic_arn = aws_sns_topic.api_alerts.arn
   protocol  = "https"
   endpoint  = "https://events.eu.pagerduty.com/integration/960fc580fbc6410ad1851bce4dbebf44/enqueue"

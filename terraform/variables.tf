@@ -23,13 +23,13 @@ variable "pagerduty_integration_key" {
   type        = string
   sensitive   = true
 }
-/*
+
 variable "pagerduty_integration_url" {
   description = "PagerDuty integration URL"
   type        = string
   sensitive   = true
 }
-*/
+
 
 variable "slack_webhook_url" {
   description = "Slack_Webhook_URL"
