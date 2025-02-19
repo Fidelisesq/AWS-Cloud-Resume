@@ -541,7 +541,7 @@ resource "aws_lambda_function" "lambda_to_pagerduty" {
   function_name    = "lambda_to_pagerduty"      # Lambda name
   role             = aws_iam_role.sns_to_pagerduty_lambda_role.arn
   handler          = "lambda_to_pagerduty.lambda_handler"  
-  runtime          = "python3.9"  # Or your preferred runtime
+  runtime          = "python3.12"  # Or your preferred runtime
   source_code_hash = filebase64sha256("lambda_to_pagerduty.zip")  # Ensures Terraform tracks the zip file changes
 
   environment {
