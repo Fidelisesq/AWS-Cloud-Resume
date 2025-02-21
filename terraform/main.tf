@@ -436,41 +436,40 @@ resource "aws_sns_topic_policy" "api_alerts_policy" {
     Version = "2012-10-17"
     Statement = [
       {
+        Sid       = "AllowCloudWatchPublish"
         Effect    = "Allow"
-        Principal = { Service = "cloudwatch.amazonaws.com" } # Restrict to CloudWatch
+        Principal = { Service = "cloudwatch.amazonaws.com" }
         Action    = "SNS:Publish"
         Resource  = aws_sns_topic.api_alerts.arn
       },
       {
+        Sid       = "AllowEmailSubscription"
         Effect    = "Allow"
         Principal = "*"
         Action    = "SNS:Subscribe"
         Resource  = aws_sns_topic.api_alerts.arn
-        Condition = {
-          StringEqualsIfExists = { "sns:Protocol" = "email" }
-        }
+        Condition = { StringEqualsIfExists = { "sns:Protocol" = "email" } }
       },
       {
+        Sid       = "AllowHttpsSubscription"
         Effect    = "Allow"
         Principal = "*"
         Action    = "SNS:Subscribe"
         Resource  = aws_sns_topic.api_alerts.arn
-        Condition = {
-          StringEqualsIfExists = { "sns:Protocol" = "https" }
-        }
+        Condition = { StringEqualsIfExists = { "sns:Protocol" = "https" } }
       },
       {
+        Sid       = "AllowLambdaSubscription"
         Effect    = "Allow"
         Principal = "*"
         Action    = "SNS:Subscribe"
         Resource  = aws_sns_topic.api_alerts.arn
-        Condition = {
-          StringEqualsIfExists = { "sns:Protocol" = "lambda" }
-        }
+        Condition = { StringEqualsIfExists = { "sns:Protocol" = "lambda" } }
       }
     ]
   })
 }
+
 
 
 #Email subscription to SNS topic
