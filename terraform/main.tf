@@ -611,6 +611,7 @@ resource "aws_lambda_function" "lambda_to_pagerduty" {
       PAGERDUTY_SECRET_ARN = aws_secretsmanager_secret.pagerduty_integration_url.arn
     }
   }
+  depends_on = [aws_s3_object.lambda_zip]
 }
 
 # Grant Lambda Permission to use S3
@@ -625,7 +626,6 @@ resource "aws_iam_role_policy" "lambda_s3_access" {
         Action    = "s3:GetObject"
         Effect    = "Allow"
         Resource  = "${aws_s3_bucket.lambda_file_bucket.arn}/*"  # Correct reference to the bucket
-        Principal = "*"
       }
     ]
   })
