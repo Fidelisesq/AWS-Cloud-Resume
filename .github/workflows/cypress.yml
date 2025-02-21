@@ -9,16 +9,24 @@ on:
 jobs:
   cypress-run:
     runs-on: ubuntu-latest
-    if: ${{ github.event.workflow_run.conclusion == 'success' }}  # This condition checks if the previous workflow ran successfully
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}  # Ensure it runs only if the previous workflow succeeded
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '16'  # Ensure the correct Node.js version
+
+      - name: Install Cypress
+        run: npm install cypress --save-dev  # Explicitly install Cypress
+
       - name: Cypress run
         uses: cypress-io/github-action@v6
         with:
-          wait-on: 'https://fidelis-resume.fozdigitalz.com/'  # Use the CloudFront URL
-          wait-on-timeout: 60  # Set a timeout for the wait-on command
+          wait-on: 'https://fidelis-resume.fozdigitalz.com/'  # Your CloudFront URL
+          wait-on-timeout: 60  # Timeout for the wait-on command
           record: true
           parallel: false  # Run tests in a single instance
         env:
@@ -34,4 +42,3 @@ jobs:
           else
             echo "Cypress tests failed!"
             echo "cypress-status=failure" >> $GITHUB_ENV
-          fi
