@@ -429,7 +429,7 @@ resource "aws_sns_topic" "api_alerts" {
 }
 
 
-#Allow HTTPS subscription  to SNS- PagerDuty
+# Allow HTTPS, email, and Lambda subscriptions to SNS - PagerDuty
 resource "aws_sns_topic_policy" "api_alerts_policy" {
   arn = aws_sns_topic.api_alerts.arn
   policy = jsonencode({
@@ -442,13 +442,14 @@ resource "aws_sns_topic_policy" "api_alerts_policy" {
         Resource  = aws_sns_topic.api_alerts.arn
         Condition = {
           StringEquals = {
-            "sns:Protocol" = "https"
+            "sns:Protocol" = ["https", "email", "lambda"]
           }
         }
       }
     ]
   })
 }
+
 
 #Email subscription to SNS topic
 resource "aws_sns_topic_subscription" "email_alert" {
