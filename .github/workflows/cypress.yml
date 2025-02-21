@@ -11,7 +11,7 @@ jobs:
     runs-on: ubuntu-latest
     if: ${{ github.event.workflow_run.conclusion == 'success' }}  # Ensure it runs only if the previous workflow succeeded
     steps:
-      - name: Checkout
+      - name: Checkout code
         uses: actions/checkout@v4
 
       - name: Set up Node.js
@@ -19,8 +19,8 @@ jobs:
         with:
           node-version: '16'  # Ensure the correct Node.js version
 
-      - name: Install Cypress
-        run: npm install cypress --save-dev  # Explicitly install Cypress
+      - name: Install dependencies
+        run: npm install  # Install all dependencies, including Cypress
 
       - name: Cypress run
         uses: cypress-io/github-action@v6
@@ -42,3 +42,4 @@ jobs:
           else
             echo "Cypress tests failed!"
             echo "cypress-status=failure" >> $GITHUB_ENV
+          fi
