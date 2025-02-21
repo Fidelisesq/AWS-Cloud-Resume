@@ -5,10 +5,6 @@ on: [push]
 jobs:
   cypress-run:
     runs-on: ubuntu-latest
-    strategy:
-      fail-fast: false
-      matrix:
-        containers: [1, 2]  # Runs tests in parallel with 2 instances
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -19,7 +15,7 @@ jobs:
           start: npm start
           wait-on: 'http://localhost:3000'  # Waits for the server to start
           record: true
-          parallel: true  # Runs tests in parallel using the matrix
+          parallel: false  # Run tests in a single instance
         env:
           CYPRESS_RECORD_KEY: ${{ secrets.CYPRESS_RECORD_KEY }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
