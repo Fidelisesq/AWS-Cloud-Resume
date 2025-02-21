@@ -9,6 +9,7 @@ on:
 jobs:
   cypress-run:
     runs-on: ubuntu-latest
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}  # This condition checks if the previous workflow ran successfully
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -16,8 +17,8 @@ jobs:
       - name: Cypress run
         uses: cypress-io/github-action@v6
         with:
-          wait-on: 'https://www.fidelis-resume.fozdigitalz.com'  # Use the CloudFront URL
-          wait-on-timeout: 120  #Set a timeout for the wait-on command
+          wait-on: 'https://fidelis-resume.fozdigitalz.com/'  # Use the CloudFront URL
+          wait-on-timeout: 60  # Set a timeout for the wait-on command
           record: true
           parallel: false  # Run tests in a single instance
         env:
