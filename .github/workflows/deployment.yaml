@@ -15,7 +15,30 @@ on:
           - destroy
 
 jobs:
+  cypress-tests:
+    name: Run Cypress Tests
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        containers: [1, 2] # Run tests in parallel
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Run Cypress tests
+        uses: cypress-io/github-action@v6
+        with:
+          start: npm start
+          wait-on: 'http://localhost:3000'
+          record: true
+          parallel: true
+        env:
+          CYPRESS_RECORD_KEY: ${{ secrets.CYPRESS_RECORD_KEY }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
   infrastructure-deployment:
+    needs: cypress-tests # Only run if Cypress tests pass
     if: >-
       (github.event_name == 'push' && !contains(github.event.head_commit.message, 'destroy')) ||
       (github.event_name == 'workflow_dispatch' && github.event.inputs.action == 'create')
@@ -34,8 +57,6 @@ jobs:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ secrets.AWS_DEFAULT_REGION }}
-        #env:
-          #TF_LOG: DEBUG
 
       - name: Set up Terraform
         uses: hashicorp/setup-terraform@v2
@@ -74,8 +95,6 @@ jobs:
 
       - name: Terraform Apply
         id: apply
-        #env:
-          #TF_LOG: DEBUG
         run: cd terraform && terraform apply -auto-approve tfplan
 
   infrastructure-cleanup:
@@ -117,7 +136,7 @@ jobs:
           pagerduty_integration_key = "${{ secrets.PAGERDUTY_INTEGRATION_KEY }}"
           slack_webhook_url = "${{ secrets.SLACK_WEBHOOK_URL }}"
           EOF
-        
+
       - name: Mask AWS Account ID in Logs
         run: echo "::add-mask::${{ secrets.AWS_ACCOUNT_ID }}"
 
@@ -127,6 +146,4 @@ jobs:
 
       - name: Terraform Destroy
         id: destroy
-        #env:
-          #TF_LOG: DEBUG
         run: cd terraform && terraform destroy -auto-approve
