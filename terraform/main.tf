@@ -585,7 +585,7 @@ resource "aws_lambda_function" "lambda_to_pagerduty" {
 */
 
 resource "aws_s3_bucket" "lambda_file_bucket" {
-  bucket = "lambda-file-bucket"  
+  bucket = "foz-lambda-file-bucket"  
 }
 
 #Upload the file to S3
@@ -625,7 +625,7 @@ resource "aws_iam_role_policy" "lambda_s3_access" {
       {
         Action    = "s3:GetObject"
         Effect    = "Allow"
-        Resource  = "${aws_s3_bucket.lambda_file_bucket.arn}/*"  # Allow Lambda to access any file in the bucket
+        Resource  = "${aws_s3_bucket.foz_lambda_file_bucket.arn}/*"  # Allow Lambda to access any file in the bucket
         Principal = "*"
       }
     ]
