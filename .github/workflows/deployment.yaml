@@ -15,31 +15,24 @@ on:
           - destroy
 
 jobs:
-  cypress-tests:
-    name: Run Cypress Tests
+  check-cypress-status:
     runs-on: ubuntu-latest
+    needs: cypress-run  # Ensure this runs after the Cypress tests
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
-      - name: Run Cypress tests
-        uses: cypress-io/github-action@v6
-        with:
-          start: npm start
-          wait-on: 'http://localhost:3000'
-          record: true
-          parallel: false  # Set parallel to false to run tests only once
-        env:
-          CYPRESS_RECORD_KEY: ${{ secrets.CYPRESS_RECORD_KEY }}
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
+      - name: Check if Cypress tests passed
+        run: |
+          if [ "${{ env.cypress-status }}" != "success" ]; then
+            echo "Cypress tests failed. Skipping infrastructure deployment."
+            exit 1
+          fi
+          
   infrastructure-deployment:
-    needs: cypress-tests # Only run if Cypress tests pass
     if: >-
       (github.event_name == 'push' && !contains(github.event.head_commit.message, 'destroy')) ||
       (github.event_name == 'workflow_dispatch' && github.event.inputs.action == 'create')
     name: "Infrastructure Deployment"
     runs-on: ubuntu-latest
+    needs: check-cypress-status  # Ensure deployment runs only if Cypress tests pass
     defaults:
       run:
         shell: bash
