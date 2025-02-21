@@ -566,7 +566,7 @@ resource "aws_iam_policy" "lambda_sns_pagerduty_access" {
 }
 
 
-
+/*
 # Lambda function for PagerDuty integration
 resource "aws_lambda_function" "lambda_to_pagerduty" {
   filename         = "lambda_to_pagerduty.zip"  # Prebuilt zip in my terraform directory
@@ -582,6 +582,57 @@ resource "aws_lambda_function" "lambda_to_pagerduty" {
     }
   }
 }
+*/
+
+resource "aws_s3_bucket" "lambda_file_bucket" {
+  bucket = "lambda-file-bucket"  
+}
+
+#Upload the file to S3
+resource "aws_s3_object" "lambda_zip" {
+  bucket = aws_s3_bucket.lambda_file_bucket.bucket  # Reference the bucket you created
+  key    = "lambda_to_pagerduty.zip"  # Name of the file in the S3 bucket
+  source = "lambda_to_pagerduty.zip"  # Path to the local zip file (ensure this file is in the same directory as your terraform files)
+  acl    = "private"  # Set the access control (default: private)
+}
+
+
+# Lambda function for PagerDuty integration to use S3 source for files
+resource "aws_lambda_function" "lambda_to_pagerduty" {
+  s3_bucket        = aws_s3_bucket.lambda_file_bucket.bucket  # Reference the S3 bucket
+  s3_key           = "lambda_to_pagerduty.zip"               # Specify the key where the zip file is stored
+  function_name    = "lambda_to_pagerduty"
+  role             = aws_iam_role.sns_to_pagerduty_lambda_role.arn
+  handler          = "lambda_to_pagerduty.lambda_handler"
+  runtime          = "python3.12"
+  source_code_hash = filebase64sha256("lambda_to_pagerduty.zip")  # Optional: Use this if you're also tracking local file changes
+  
+  environment {
+    variables = {
+      PAGERDUTY_SECRET_ARN = aws_secretsmanager_secret.pagerduty_integration_url.arn
+    }
+  }
+}
+
+#Grant Lambda Permission to use S3
+resource "aws_iam_role_policy" "lambda_s3_access" {
+  name = "lambda_s3_access_policy"
+  role = aws_iam_role.sns_to_pagerduty_lambda_role.id
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Action    = "s3:GetObject"
+        Effect    = "Allow"
+        Resource  = "${aws_s3_bucket.lambda_file_bucket.arn}/*"  # Allow Lambda to access any file in the bucket
+        Principal = "*"
+      }
+    ]
+  })
+}
+
+
 
 #PagerDuty Lambda subscription to SNS
 resource "aws_sns_topic_subscription" "pagerduty_subscription" {
