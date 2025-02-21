@@ -429,7 +429,7 @@ resource "aws_sns_topic" "api_alerts" {
 }
 
 
-# Allow HTTPS, email, and Lambda subscriptions to SNS - PagerDuty
+# Allow HTTPS, email, and Lambda subscriptions to SNS & restrict publish to clodwatch
 resource "aws_sns_topic_policy" "api_alerts_policy" {
   arn = aws_sns_topic.api_alerts.arn
   policy = jsonencode({
@@ -437,13 +437,35 @@ resource "aws_sns_topic_policy" "api_alerts_policy" {
     Statement = [
       {
         Effect    = "Allow"
+        Principal = { Service = "cloudwatch.amazonaws.com" } # Restrict to CloudWatch
+        Action    = "SNS:Publish"
+        Resource  = aws_sns_topic.api_alerts.arn
+      },
+      {
+        Effect    = "Allow"
         Principal = "*"
-        Action    = ["SNS:Subscribe", "SNS:Publish"],
+        Action    = "SNS:Subscribe"
         Resource  = aws_sns_topic.api_alerts.arn
         Condition = {
-          StringEquals = {
-            "sns:Protocol" = ["https", "email", "lambda"]
-          }
+          StringEqualsIfExists = { "sns:Protocol" = "email" }
+        }
+      },
+      {
+        Effect    = "Allow"
+        Principal = "*"
+        Action    = "SNS:Subscribe"
+        Resource  = aws_sns_topic.api_alerts.arn
+        Condition = {
+          StringEqualsIfExists = { "sns:Protocol" = "https" }
+        }
+      },
+      {
+        Effect    = "Allow"
+        Principal = "*"
+        Action    = "SNS:Subscribe"
+        Resource  = aws_sns_topic.api_alerts.arn
+        Condition = {
+          StringEqualsIfExists = { "sns:Protocol" = "lambda" }
         }
       }
     ]
