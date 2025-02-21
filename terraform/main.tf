@@ -565,9 +565,17 @@ resource "aws_iam_policy" "lambda_sns_pagerduty_access" {
   })
 }
 
+#Create Lambda Layer to hold dependencies that can forward request to PagerDuty
+resource "aws_lambda_layer_version" "pagerduty_lambda_layer" {
+  layer_name  = "pagerduty_lambda_layer"
+  filename    = "lambda_layer.zip"  # Path to your Lambda layer zip file
+  source_code_hash = filebase64sha256("lambda_layer.zip")  # Ensure Terraform tracks changes
 
-/*
-# Lambda function for PagerDuty integration
+  compatible_runtimes = ["python3.12"]  # Use the runtime compatible with your Lambda function
+}
+
+
+# Lambda function for PagerDuty integration + layers
 resource "aws_lambda_function" "lambda_to_pagerduty" {
   filename         = "lambda_to_pagerduty.zip"  # Prebuilt zip in my terraform directory
   function_name    = "lambda_to_pagerduty"      # Lambda name
@@ -581,55 +589,12 @@ resource "aws_lambda_function" "lambda_to_pagerduty" {
       PAGERDUTY_SECRET_ARN = aws_secretsmanager_secret.pagerduty_integration_url.arn
     }
   }
-}
-*/
 
-#Create S3 bucket
-resource "aws_s3_bucket" "lambda_file_bucket" {
-  bucket = "foz-lambda-file-bucket"
+  layers = [
+    aws_lambda_layer_version.pagerduty_lambda_layer.arn  # Attach the Lambda layer here
+  ]
 }
 
-# Upload the file to S3
-resource "aws_s3_object" "lambda_zip" {
-  bucket = aws_s3_bucket.lambda_file_bucket.bucket  # Reference the bucket you created
-  key    = "lambda_to_pagerduty.zip"  # Name of the file in the S3 bucket
-  source = "lambda_to_pagerduty.zip"  # Path to the local zip file
-  acl    = "private"  # Set the access control (default: private)
-}
-
-# Lambda function for PagerDuty integration to use S3 source for files
-resource "aws_lambda_function" "lambda_to_pagerduty" {
-  s3_bucket        = aws_s3_bucket.lambda_file_bucket.bucket  # Reference the S3 bucket
-  s3_key           = "lambda_to_pagerduty.zip"               # Specify the key where the zip file is stored
-  function_name    = "lambda_to_pagerduty"
-  role             = aws_iam_role.sns_to_pagerduty_lambda_role.arn
-  handler          = "lambda_to_pagerduty.lambda_handler"
-  runtime          = "python3.12"
-  
-  environment {
-    variables = {
-      PAGERDUTY_SECRET_ARN = aws_secretsmanager_secret.pagerduty_integration_url.arn
-    }
-  }
-  depends_on = [aws_s3_object.lambda_zip]
-}
-
-# Grant Lambda Permission to use S3
-resource "aws_iam_role_policy" "lambda_s3_access" {
-  name = "lambda_s3_access_policy"
-  role = aws_iam_role.sns_to_pagerduty_lambda_role.id
-
-  policy = jsonencode({
-    Version = "2012-10-17"
-    Statement = [
-      {
-        Action    = "s3:GetObject"
-        Effect    = "Allow"
-        Resource  = "${aws_s3_bucket.lambda_file_bucket.arn}/*"  # Correct reference to the bucket
-      }
-    ]
-  })
-}
 
 
 #PagerDuty Lambda subscription to SNS
