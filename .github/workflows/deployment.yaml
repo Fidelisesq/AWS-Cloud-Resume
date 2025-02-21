@@ -15,24 +15,12 @@ on:
           - destroy
 
 jobs:
-  check-cypress-status:
-    runs-on: ubuntu-latest
-    needs: cypress-run  # Ensure this runs after the Cypress tests
-    steps:
-      - name: Check if Cypress tests passed
-        run: |
-          if [ "${{ env.cypress-status }}" != "success" ]; then
-            echo "Cypress tests failed. Skipping infrastructure deployment."
-            exit 1
-          fi
-          
   infrastructure-deployment:
     if: >-
       (github.event_name == 'push' && !contains(github.event.head_commit.message, 'destroy')) ||
       (github.event_name == 'workflow_dispatch' && github.event.inputs.action == 'create')
     name: "Infrastructure Deployment"
     runs-on: ubuntu-latest
-    needs: check-cypress-status  # Ensure deployment runs only if Cypress tests pass
     defaults:
       run:
         shell: bash
@@ -46,6 +34,8 @@ jobs:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ secrets.AWS_DEFAULT_REGION }}
+        #env:
+          #TF_LOG: DEBUG
 
       - name: Set up Terraform
         uses: hashicorp/setup-terraform@v2
@@ -84,6 +74,8 @@ jobs:
 
       - name: Terraform Apply
         id: apply
+        #env:
+          #TF_LOG: DEBUG
         run: cd terraform && terraform apply -auto-approve tfplan
 
   infrastructure-cleanup:
@@ -125,7 +117,7 @@ jobs:
           pagerduty_integration_key = "${{ secrets.PAGERDUTY_INTEGRATION_KEY }}"
           slack_webhook_url = "${{ secrets.SLACK_WEBHOOK_URL }}"
           EOF
-
+        
       - name: Mask AWS Account ID in Logs
         run: echo "::add-mask::${{ secrets.AWS_ACCOUNT_ID }}"
 
@@ -135,4 +127,6 @@ jobs:
 
       - name: Terraform Destroy
         id: destroy
+        #env:
+          #TF_LOG: DEBUG
         run: cd terraform && terraform destroy -auto-approve

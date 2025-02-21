@@ -1,6 +1,10 @@
 name: Cypress Tests
 
-on: [push]
+on:
+  workflow_run:
+    workflows: ["Deploy Infrastructure"]  # Name of the workflow you want to wait for
+    types:
+      - completed
 
 jobs:
   cypress-run:
@@ -12,8 +16,8 @@ jobs:
       - name: Cypress run
         uses: cypress-io/github-action@v6
         with:
-          start: npm start
-          wait-on: 'http://localhost:3000'  # Waits for the server to start
+          wait-on: 'https://www.fidelis-resume.fozdigitalz.com'  # Use the CloudFront URL
+          wait-on-timeout: 120  #Set a timeout for the wait-on command
           record: true
           parallel: false  # Run tests in a single instance
         env:
