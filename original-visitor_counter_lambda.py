@@ -23,16 +23,11 @@ def hash_ip(ip_address):
 
 def lambda_handler(event, context):
     key = {"id": "counter"}
+    visitor_ip = event['requestContext']['identity']['sourceIp']
+    visitor_hash = hash_ip(visitor_ip)  # Hash the IP address
+    visitor_key = {"id": f"visitor_{visitor_hash}"}
     
-    # **Trigger a Forced Lambda Error (API Gateway 5XX Error)**
-    if 'test_error' in event.get('queryStringParameters', {}):
-        raise Exception("Forced API Gateway 5XX Error for testing")
-
     try:
-        visitor_ip = event['requestContext']['identity']['sourceIp']
-        visitor_hash = hash_ip(visitor_ip)  # Hash the IP address
-        visitor_key = {"id": f"visitor_{visitor_hash}"}
-        
         # Fetch the visitor's last visit time
         visitor_response = table.get_item(Key=visitor_key)
         last_visit = visitor_response.get('Item', {}).get('lastVisit', None)
@@ -88,11 +83,6 @@ def lambda_handler(event, context):
     
     except Exception as e:
         print("Error updating visitor count:", str(e))
-        
-        # **Simulate a Lambda Function Error**
-        if 'test_lambda_error' in event.get('queryStringParameters', {}):
-            return 1 / 0  # This will cause a ZeroDivisionError
-        
         return {
             "statusCode": 500,
             "headers": {
