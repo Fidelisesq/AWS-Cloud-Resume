@@ -58,6 +58,9 @@ jobs:
           slack_webhook_url = "${{ secrets.SLACK_WEBHOOK_URL }}"
           EOF
 
+      - name: Mask AWS Account ID in Logs
+        run: echo "::add-mask::${{ secrets.AWS_ACCOUNT_ID }}"
+
       - name: Terraform Init
         id: init
         run: cd terraform && terraform init
@@ -116,6 +119,9 @@ jobs:
           pagerduty_integration_key = "${{ secrets.PAGERDUTY_INTEGRATION_KEY }}"
           slack_webhook_url = "${{ secrets.SLACK_WEBHOOK_URL }}"
           EOF
+        
+      - name: Mask AWS Account ID in Logs
+        run: echo "::add-mask::${{ secrets.AWS_ACCOUNT_ID }}"
 
       - name: Terraform Init
         id: init

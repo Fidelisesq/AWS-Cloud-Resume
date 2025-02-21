@@ -429,7 +429,7 @@ resource "aws_sns_topic" "api_alerts" {
 }
 
 
-# Allow HTTPS, email, and Lambda subscriptions to SNS & restrict publish to clodwatch
+# Allow HTTPS, email, and Lambda subscriptions to SNS & restrict publish to SNS to only CloudWatch
 resource "aws_sns_topic_policy" "api_alerts_policy" {
   arn = aws_sns_topic.api_alerts.arn
   policy = jsonencode({
@@ -479,16 +479,6 @@ resource "aws_sns_topic_subscription" "email_alert" {
   endpoint  = var.email_address
 }
 
-
-#Test PagerDuty Subscription Directly to SNS
-resource "aws_sns_topic_subscription" "pagerduty_sub" {
-  topic_arn = aws_sns_topic.api_alerts.arn
-  protocol  = "https"
-  endpoint  = "https://events.eu.pagerduty.com/integration/57fa85da4b2a4705c123220848ab63d8/enqueue"
-  raw_message_delivery = false
-}
-
-
 #Store PagerDuty Integration URL in Secret Manager
 resource "aws_secretsmanager_secret" "pagerduty_integration_url" {
   name = "pagerduty_integration_url"
@@ -498,6 +488,16 @@ resource "aws_secretsmanager_secret_version" "pagerduty_integration_url_value" {
   secret_id     = aws_secretsmanager_secret.pagerduty_integration_url.id
   secret_string = var.pagerduty_integration_url
 }
+
+/*
+#PagerDuty Subscription Directly to SNS
+resource "aws_sns_topic_subscription" "pagerduty_sub" {
+  topic_arn = aws_sns_topic.api_alerts.arn
+  protocol  = "https"
+  endpoint  = "https://events.eu.pagerduty.com/integration/57fa85da4b2a4705c123220848ab63d8/enqueue"
+  raw_message_delivery = false
+}
+*/
 
 
 #IAM Role for PagerDuty Lambda
@@ -599,7 +599,6 @@ resource "aws_lambda_permission" "allow_sns_invoke" {
   principal     = "sns.amazonaws.com"
   source_arn    = aws_sns_topic.api_alerts.arn
 }
-
 
 
 #Cloud Watch Alarm for API Gateway
