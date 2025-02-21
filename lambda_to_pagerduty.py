@@ -12,10 +12,21 @@ def lambda_handler(event, context):
     region_name = "us-east-1"
     
     try:
+        # Fetch the secret value
         response = secrets_client.get_secret_value(SecretId=secret_name)
+        
+        # Parse the secret string to JSON
         secret_dict = json.loads(response['SecretString'])
+        
+        # Ensure the expected key exists in the secret
+        if 'pagerduty_integration_url' not in secret_dict:
+            raise Exception("pagerduty_integration_url not found in the secret")
+
         pagerduty_url = secret_dict['pagerduty_integration_url']
-        integration_key = pagerduty_url.split('/')[4]  # Extract the integration key
+        
+        # Extract the integration key (if required)
+        integration_key = pagerduty_url.split('/')[4]  # Extract the integration key part from the URL
+
     except Exception as e:
         print(f"Error retrieving secret: {e}")
         raise e

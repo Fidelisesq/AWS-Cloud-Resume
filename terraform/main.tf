@@ -479,16 +479,6 @@ resource "aws_sns_topic_subscription" "email_alert" {
   endpoint  = var.email_address
 }
 
-#Store PagerDuty Integration URL in Secret Manager
-resource "aws_secretsmanager_secret" "pagerduty_integration_url" {
-  name = "pagerduty_integration_url"
-}
-
-resource "aws_secretsmanager_secret_version" "pagerduty_integration_url_value" {
-  secret_id     = aws_secretsmanager_secret.pagerduty_integration_url.id
-  secret_string = var.pagerduty_integration_url
-}
-
 /*
 #PagerDuty Subscription Directly to SNS
 resource "aws_sns_topic_subscription" "pagerduty_sub" {
@@ -498,6 +488,16 @@ resource "aws_sns_topic_subscription" "pagerduty_sub" {
   raw_message_delivery = false
 }
 */
+
+#Store PagerDuty Integration URL in Secret Manager
+resource "aws_secretsmanager_secret" "pagerduty_integration_url" {
+  name = "pagerduty_integration_url"
+}
+
+resource "aws_secretsmanager_secret_version" "pagerduty_integration_url_value" {
+  secret_id     = aws_secretsmanager_secret.pagerduty_integration_url.id
+  secret_string = var.pagerduty_integration_url
+}
 
 
 #IAM Role for PagerDuty Lambda
