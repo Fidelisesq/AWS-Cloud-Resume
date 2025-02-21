@@ -585,7 +585,7 @@ resource "aws_cloudwatch_metric_alarm" "api_errors_alarm" {
   alarm_name          = "API-Error-Alarm"
   comparison_operator = "GreaterThanOrEqualToThreshold"
   evaluation_periods  = "1"
-  metric_name         = "5XXError"
+  metric_name         = "IntegrationLatency"
   namespace           = "AWS/ApiGateway"
   period              = "60"
   statistic           = "Sum"
@@ -595,7 +595,7 @@ resource "aws_cloudwatch_metric_alarm" "api_errors_alarm" {
     ApiId = aws_api_gateway_rest_api.cloud_resume_api.id
   }
 
-  alarm_description = "Triggers when there are 5XX errors in API Gateway"
+  alarm_description = "Triggers when API Gateway returns a 502 error"
   actions_enabled   = true
   alarm_actions     = [aws_sns_topic.api_alerts.arn]
 
