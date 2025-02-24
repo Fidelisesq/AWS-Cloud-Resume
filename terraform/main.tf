@@ -204,11 +204,7 @@ resource "aws_kms_key_policy" "dnssec_key_policy" {
         Effect    = "Allow"
         Principal = { AWS = "arn:aws:iam::${data.aws_caller_identity.current.account_id}:user/Fidelisesq" }
         Action   = [
-          "kms:PutKeyPolicy",
-          "kms:GetKeyPolicy",  # Allowing GetKeyPolicy action
-          "kms:DescribeKey",
-          "kms:GetKeyRotationStatus",
-          "kms:ListResourceTags"
+          "kms:*"
         ]
         Resource = aws_kms_key.dnssec_key.arn
       }
