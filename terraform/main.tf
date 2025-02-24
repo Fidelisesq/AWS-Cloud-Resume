@@ -157,15 +157,6 @@ resource "aws_cloudfront_distribution" "cloud_resume_distribution" {
 }
 
 
-# Route 53 DNS configuration
-resource "aws_route53_record" "cloud_resume_record" {
-  zone_id = data.aws_route53_zone.fozdigitalz_com.zone_id
-  name    = "fidelis-resume.fozdigitalz.com"
-  type    = "CNAME"
-  ttl     = 300
-  records = [aws_cloudfront_distribution.cloud_resume_distribution.domain_name]
-}
-
 # Fetch the Route 53 hosted zone info for fozdigitalz.com
 data "aws_route53_zone" "fozdigitalz_com" {
   name = "fozdigitalz.com"
