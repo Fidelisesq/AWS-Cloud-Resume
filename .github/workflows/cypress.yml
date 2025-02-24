@@ -7,49 +7,8 @@ on:
       - completed
 
 jobs:
-  pre-check:
-    runs-on: ubuntu-latest
-    outputs:
-      should_run: ${{ steps.check-jobs.outputs.deploy_succeeded }}
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Install GitHub CLI
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y gh
-
-      - name: Debug GitHub CLI Output
-        run: |
-          run_id=${{ github.event.workflow_run.id }}
-          repo=${{ github.repository }}
-          echo "Fetching jobs for run ID: $run_id"
-          gh api repos/$repo/actions/runs/$run_id/jobs --jq '.jobs[] | {name, conclusion}'
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Get Workflow Run Jobs
-        id: check-jobs
-        run: |
-          run_id=${{ github.event.workflow_run.id }}
-          repo=${{ github.repository }}
-          job_conclusion=$(gh api repos/$repo/actions/runs/$run_id/jobs --jq '[.jobs[] | select(.name == "infrastructure-deployment")][0].conclusion')
-
-          echo "Job conclusion: $job_conclusion"
-
-          if [[ "$job_conclusion" == "\"success\"" ]]; then
-            echo "deploy_succeeded=true" >> $GITHUB_OUTPUT
-          else
-            echo "deploy_succeeded=false" >> $GITHUB_OUTPUT
-          fi
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
   cypress-run:
     runs-on: ubuntu-latest
-    needs: pre-check
-    if: needs.pre-check.outputs.should_run == 'true'
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
