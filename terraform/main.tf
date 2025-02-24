@@ -207,7 +207,6 @@ resource "aws_kms_key_policy" "dnssec_key_policy" {
           "kms:GetKeyPolicy",  # Allowing GetKeyPolicy action
           "kms:DescribeKey",
           "kms:GetKeyRotationStatus"
-
         ]
         Resource = aws_kms_key.dnssec_key.arn
       }
