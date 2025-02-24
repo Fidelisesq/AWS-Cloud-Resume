@@ -60,11 +60,6 @@ variable "aws_region" {
 }
 
 #DNSSEC Variables for Domain Name
-variable "dnssec_algorithm" {}
-variable "dnssec_digest" {}
-variable "dnssec_digest_type" {}
-variable "dnssec_key_tag" {}
-
 variable "dnssec_algorithm" {
   description = "The DNSSEC algorithm"
   type        = string
