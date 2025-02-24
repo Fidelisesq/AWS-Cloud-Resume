@@ -204,17 +204,22 @@ resource "aws_kms_key_policy" "dnssec_key_policy" {
         Action   = [ "kms:PutKeyPolicy", "kms:DeleteAlias", "kms:CreateAlias", "kms:DescribeKey", "kms:ListAliases" ]
         Resource = "*"
       },
+      # Allow your IAM user (Fidelisesq) to get the key policy and perform other necessary actions
       {
         Effect    = "Allow"
         Principal = { AWS = "arn:aws:iam::${data.aws_caller_identity.current.account_id}:user/Fidelisesq" }
-        Action   = [ "kms:PutKeyPolicy", "kms:GetKeyPolicy", "kms:DescribeKey" ]
+        Action   = [
+          "kms:PutKeyPolicy",
+          "kms:GetKeyPolicy",  # Allowing GetKeyPolicy action
+          "kms:DescribeKey"
+        ]
         Resource = aws_kms_key.dnssec_key.arn
       }
     ]
   })
 }
 
-#Create the DNSSEC key signing key
+# Create the DNSSEC key signing key
 resource "aws_route53_key_signing_key" "dnssec_kms_key" {
   hosted_zone_id = data.aws_route53_zone.fozdigitalz_com.zone_id
   name           = "dnssec-kms-key"
@@ -222,11 +227,12 @@ resource "aws_route53_key_signing_key" "dnssec_kms_key" {
   depends_on = [aws_kms_key_policy.dnssec_key_policy]
 }
 
-#Enable DNSSEC for the hosted zone
+# Enable DNSSEC for the hosted zone
 resource "aws_route53_hosted_zone_dnssec" "dnssec" {
   hosted_zone_id = data.aws_route53_zone.fozdigitalz_com.zone_id
   depends_on = [aws_route53_key_signing_key.dnssec_kms_key]
 }
+
 
 
 # DynamoDB table for visitor count
