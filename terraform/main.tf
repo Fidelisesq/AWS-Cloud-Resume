@@ -172,7 +172,6 @@ data "aws_route53_zone" "fozdigitalz_com" {
 }
 
 # Create a KMS key for DNSSEC signing in Route 53 + policy
-# Create a KMS key for DNSSEC signing in Route 53 + policy
 resource "aws_kms_key" "dnssec_key" {
   description             = "KMS key for Route 53 DNSSEC signing"
   deletion_window_in_days = 30
@@ -210,7 +209,7 @@ resource "aws_kms_key" "dnssec_key" {
         ]
         Resource = "*"
       },
-      # Allow my specific IAM user to perform key policy updates
+      # Allow my specific IAM user to perform key policy updates and read the key policy
       {
         Effect    = "Allow"
         Principal = {
@@ -218,10 +217,12 @@ resource "aws_kms_key" "dnssec_key" {
         }
         Action   = [
           "kms:PutKeyPolicy",
-          "kms:GetKeyPolicy",
+          "kms:GetKeyPolicy",  # Ensuring you can retrieve the policy
           "kms:DescribeKey"
         ]
-        Resource = "*"
+        Resource = "arn:aws:kms:${data.aws_region.current}:${
+          data.aws_caller_identity.current.account_id
+        }:key/${aws_kms_key.dnssec_key.key_id}"  # Specific resource ARN for this key
       }
     ]
   })
