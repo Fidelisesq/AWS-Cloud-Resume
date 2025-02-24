@@ -172,79 +172,62 @@ data "aws_route53_zone" "fozdigitalz_com" {
   name = "fozdigitalz.com"
 }
 
-# Create a KMS key for DNSSEC signing in Route 53
+# Create the KMS key (without setting the policy initially)
 resource "aws_kms_key" "dnssec_key" {
   description             = "KMS key for Route 53 DNSSEC signing"
   deletion_window_in_days = 30
   enable_key_rotation     = true
-
   key_usage = "ENCRYPT_DECRYPT"
 }
 
-# Apply the key policy separately after key creation
+# Use a data source to get the key's policy (ensure IAM user has access to kms:GetKeyPolicy)
+data "aws_kms_key" "dnssec_key" {
+  key_id = aws_kms_key.dnssec_key.key_id
+}
+
+# Step 3: Set the policy for the KMS key, ensuring the user has GetKeyPolicy permission
 resource "aws_kms_key_policy" "dnssec_key_policy" {
   key_id = aws_kms_key.dnssec_key.key_id
 
   policy = jsonencode({
     Version = "2012-10-17"
     Statement = [
-      # Allow Route 53 service to use the KMS key for encryption and decryption
       {
         Effect    = "Allow"
-        Principal = {
-          Service = "route53.amazonaws.com"
-        }
-        Action   = [
-          "kms:Encrypt",
-          "kms:Decrypt"
-        ]
+        Principal = { Service = "route53.amazonaws.com" }
+        Action   = [ "kms:Encrypt", "kms:Decrypt" ]
         Resource = "*"
       },
-      # Allow root account to manage KMS key policy and aliases
       {
         Effect    = "Allow"
-        Principal = {
-          AWS = "arn:aws:iam::${data.aws_caller_identity.current.account_id}:root"
-        }
-        Action   = [
-          "kms:PutKeyPolicy",
-          "kms:DeleteAlias",
-          "kms:CreateAlias",
-          "kms:DescribeKey",
-          "kms:ListAliases"
-        ]
+        Principal = { AWS = "arn:aws:iam::${data.aws_caller_identity.current.account_id}:root" }
+        Action   = [ "kms:PutKeyPolicy", "kms:DeleteAlias", "kms:CreateAlias", "kms:DescribeKey", "kms:ListAliases" ]
         Resource = "*"
       },
-      # Allow your specific IAM user to perform key policy updates and read the key policy
       {
         Effect    = "Allow"
-        Principal = {
-          AWS = "arn:aws:iam::${data.aws_caller_identity.current.account_id}:user/Fidelisesq"
-        }
-        Action   = [
-          "kms:PutKeyPolicy",
-          "kms:GetKeyPolicy",  # Explicitly allow GetKeyPolicy
-          "kms:DescribeKey"
-        ]
-        Resource = aws_kms_key.dnssec_key.arn  # Use the created key's ARN explicitly
+        Principal = { AWS = "arn:aws:iam::${data.aws_caller_identity.current.account_id}:user/Fidelisesq" }
+        Action   = [ "kms:PutKeyPolicy", "kms:GetKeyPolicy", "kms:DescribeKey" ]
+        Resource = aws_kms_key.dnssec_key.arn
       }
     ]
   })
 }
 
-# Create a DNSSEC key signing key (KSK) for the Route 53 hosted zone using a KMS key
+#Create the DNSSEC key signing key
 resource "aws_route53_key_signing_key" "dnssec_kms_key" {
-  hosted_zone_id   = data.aws_route53_zone.fozdigitalz_com.zone_id
-  name             = "dnssec-kms-key"
+  hosted_zone_id = data.aws_route53_zone.fozdigitalz_com.zone_id
+  name           = "dnssec-kms-key"
   key_management_service_arn = aws_kms_key.dnssec_key.arn
-  depends_on = [aws_kms_key.dnssec_key]
+  depends_on = [aws_kms_key_policy.dnssec_key_policy]
 }
 
-# Enable DNSSEC for the specified Route 53 hosted zone
+#Enable DNSSEC for the hosted zone
 resource "aws_route53_hosted_zone_dnssec" "dnssec" {
   hosted_zone_id = data.aws_route53_zone.fozdigitalz_com.zone_id
   depends_on = [aws_route53_key_signing_key.dnssec_kms_key]
 }
+
 
 # DynamoDB table for visitor count
 resource "aws_dynamodb_table" "visitor_count" {
