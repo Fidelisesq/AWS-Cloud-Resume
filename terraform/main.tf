@@ -166,22 +166,29 @@ resource "aws_route53_record" "cloud_resume_record" {
   records = [aws_cloudfront_distribution.cloud_resume_distribution.domain_name]
 }
 
-
 # Fetch the Route 53 hosted zone info for fozdigitalz.com
 data "aws_route53_zone" "fozdigitalz_com" {
   name = "fozdigitalz.com"
 }
 
-/*
+# Route 53 DNS configuration
+resource "aws_route53_record" "cloud_resume_record" {
+  zone_id = data.aws_route53_zone.fozdigitalz_com.zone_id
+  name    = "fidelis-resume.fozdigitalz.com"
+  type    = "CNAME"
+  ttl     = 300
+  records = [aws_cloudfront_distribution.cloud_resume_distribution.domain_name]
+}
+
 # Create the KMS key (without setting the policy initially)
 resource "aws_kms_key" "dnssec_key" {
   description             = "KMS key for Route 53 DNSSEC signing"
   deletion_window_in_days = 30
   enable_key_rotation     = true
-  key_usage = "ENCRYPT_DECRYPT"
+  key_usage               = "ENCRYPT_DECRYPT"
 }
 
-# Step 1: Define the KMS key policy (allow user to get key policy)
+# Define the KMS key policy
 resource "aws_kms_key_policy" "dnssec_key_policy" {
   key_id = aws_kms_key.dnssec_key.key_id
 
@@ -192,13 +199,13 @@ resource "aws_kms_key_policy" "dnssec_key_policy" {
         Effect    = "Allow"
         Principal = { Service = "route53.amazonaws.com" }
         Action   = [ "kms:Encrypt", "kms:Decrypt" ]
-        Resource = "*"
+        Resource = aws_kms_key.dnssec_key.arn
       },
       {
         Effect    = "Allow"
         Principal = { AWS = "arn:aws:iam::${data.aws_caller_identity.current.account_id}:root" }
         Action   = [ "kms:PutKeyPolicy", "kms:DeleteAlias", "kms:CreateAlias", "kms:DescribeKey", "kms:ListAliases" ]
-        Resource = "*"
+        Resource = aws_kms_key.dnssec_key.arn
       },
       # Allow your IAM user (Fidelisesq) to get and put key policies
       {
@@ -210,37 +217,22 @@ resource "aws_kms_key_policy" "dnssec_key_policy" {
           "kms:DescribeKey"
         ]
         Resource = aws_kms_key.dnssec_key.arn
-      },
-      # Allow your root account to modify the key policy
-      {
-        Effect    = "Allow"
-        Principal = { AWS = "arn:aws:iam::${data.aws_caller_identity.current.account_id}:root" }
-        Action   = [
-          "kms:PutKeyPolicy",
-          "kms:GetKeyPolicy"
-        ]
-        Resource = aws_kms_key.dnssec_key.arn
       }
     ]
   })
 }
-
-
 
 # Create the DNSSEC key signing key
 resource "aws_route53_key_signing_key" "dnssec_kms_key" {
   hosted_zone_id = data.aws_route53_zone.fozdigitalz_com.zone_id
   name           = "dnssec-kms-key"
   key_management_service_arn = aws_kms_key.dnssec_key.arn
-  depends_on = [aws_kms_key_policy.dnssec_key_policy]
 }
 
 # Enable DNSSEC for the hosted zone
 resource "aws_route53_hosted_zone_dnssec" "dnssec" {
   hosted_zone_id = data.aws_route53_zone.fozdigitalz_com.zone_id
-  depends_on = [aws_route53_key_signing_key.dnssec_kms_key]
 }
-*/
 
 
 # DynamoDB table for visitor count
