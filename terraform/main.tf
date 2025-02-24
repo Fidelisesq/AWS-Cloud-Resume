@@ -172,13 +172,18 @@ data "aws_route53_zone" "fozdigitalz_com" {
   name = "fozdigitalz.com"
 }
 
-# Create a KMS key for DNSSEC signing in Route 53 + policy
+# Create a KMS key for DNSSEC signing in Route 53
 resource "aws_kms_key" "dnssec_key" {
   description             = "KMS key for Route 53 DNSSEC signing"
   deletion_window_in_days = 30
   enable_key_rotation     = true
 
   key_usage = "ENCRYPT_DECRYPT"
+}
+
+# Apply the key policy separately after key creation
+resource "aws_kms_key_policy" "dnssec_key_policy" {
+  key_id = aws_kms_key.dnssec_key.key_id
 
   policy = jsonencode({
     Version = "2012-10-17"
@@ -210,7 +215,7 @@ resource "aws_kms_key" "dnssec_key" {
         ]
         Resource = "*"
       },
-      # Allow my specific IAM user to perform key policy updates and read the key policy
+      # Allow your specific IAM user to perform key policy updates and read the key policy
       {
         Effect    = "Allow"
         Principal = {
@@ -221,10 +226,24 @@ resource "aws_kms_key" "dnssec_key" {
           "kms:GetKeyPolicy",  # Explicitly allow GetKeyPolicy
           "kms:DescribeKey"
         ]
-        Resource = "*"  # Use a wildcard instead of self-referencing the key ARN
+        Resource = aws_kms_key.dnssec_key.arn  # Use the created key's ARN explicitly
       }
     ]
   })
+}
+
+# Create a DNSSEC key signing key (KSK) for the Route 53 hosted zone using a KMS key
+resource "aws_route53_key_signing_key" "dnssec_kms_key" {
+  hosted_zone_id            = data.aws_route53_zone.fozdigitalz_com.zone_id
+  name                      = "dnssec-kms-key"
+  key_management_service_arn = aws_kms_key.dnssec_key.arn
+  depends_on = [aws_kms_key_policy.dnssec_key_policy]
+}
+
+# Enable DNSSEC for the specified Route 53 hosted zone
+resource "aws_route53_hosted_zone_dnssec" "dnssec" {
+  hosted_zone_id = data.aws_route53_zone.fozdigitalz_com.zone_id
+  depends_on = [aws_route53_key_signing_key.dnssec_kms_key]
 }
 
 
