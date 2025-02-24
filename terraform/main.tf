@@ -172,6 +172,7 @@ data "aws_route53_zone" "fozdigitalz_com" {
 }
 
 # Create a KMS key for DNSSEC signing in Route 53 + policy
+# Create a KMS key for DNSSEC signing in Route 53 + policy
 resource "aws_kms_key" "dnssec_key" {
   description             = "KMS key for Route 53 DNSSEC signing"
   deletion_window_in_days = 30
@@ -182,23 +183,25 @@ resource "aws_kms_key" "dnssec_key" {
   policy = jsonencode({
     Version = "2012-10-17"
     Statement = [
+      # Allow Route 53 service to use the KMS key for encryption and decryption
       {
-        Effect = "Allow"
+        Effect    = "Allow"
         Principal = {
           Service = "route53.amazonaws.com"
         }
-        Action = [
+        Action   = [
           "kms:Encrypt",
           "kms:Decrypt"
         ]
         Resource = "*"
       },
+      # Allow root account to manage KMS key policy and aliases
       {
-        Effect = "Allow"
+        Effect    = "Allow"
         Principal = {
           AWS = "arn:aws:iam::${data.aws_caller_identity.current.account_id}:root"
         }
-        Action = [
+        Action   = [
           "kms:PutKeyPolicy",
           "kms:DeleteAlias",
           "kms:CreateAlias",
@@ -206,11 +209,23 @@ resource "aws_kms_key" "dnssec_key" {
           "kms:ListAliases"
         ]
         Resource = "*"
+      },
+      # Allow my specific IAM user to perform key policy updates
+      {
+        Effect    = "Allow"
+        Principal = {
+          AWS = "arn:aws:iam::${data.aws_caller_identity.current.account_id}:user/Fidelisesq"
+        }
+        Action   = [
+          "kms:PutKeyPolicy",
+          "kms:GetKeyPolicy",
+          "kms:DescribeKey"
+        ]
+        Resource = "*"
       }
     ]
   })
 }
-
 
 
 # Create a DNSSEC key signing key (KSK) for the Route 53 hosted zone using a KMS key
