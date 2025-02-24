@@ -180,12 +180,7 @@ resource "aws_kms_key" "dnssec_key" {
   key_usage = "ENCRYPT_DECRYPT"
 }
 
-# Use a data source to get the key's policy (ensure IAM user has access to kms:GetKeyPolicy)
-data "aws_kms_key" "dnssec_key" {
-  key_id = aws_kms_key.dnssec_key.key_id
-}
-
-# Step 3: Set the policy for the KMS key, ensuring the user has GetKeyPolicy permission
+# Step 1: Define the KMS key policy (allow user to get key policy)
 resource "aws_kms_key_policy" "dnssec_key_policy" {
   key_id = aws_kms_key.dnssec_key.key_id
 
@@ -232,6 +227,7 @@ resource "aws_route53_hosted_zone_dnssec" "dnssec" {
   hosted_zone_id = data.aws_route53_zone.fozdigitalz_com.zone_id
   depends_on = [aws_route53_key_signing_key.dnssec_kms_key]
 }
+
 
 
 
