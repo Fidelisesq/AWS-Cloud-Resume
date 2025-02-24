@@ -13,6 +13,7 @@ provider "aws" {
   region = "us-east-1" # Set the deployment region
 }
 
+# Declare the caller identity data resource
 data "aws_caller_identity" "current" {}
 
 # S3 bucket for static website
@@ -170,9 +171,6 @@ resource "aws_route53_record" "cloud_resume_record" {
 data "aws_route53_zone" "fozdigitalz_com" {
   name = "fozdigitalz.com"
 }
-
-# Declare the caller identity data resource
-data "aws_caller_identity" "current" {}
 
 # Create a KMS key for DNSSEC signing in Route 53 + policy
 resource "aws_kms_key" "dnssec_key" {
