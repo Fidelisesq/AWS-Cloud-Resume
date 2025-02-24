@@ -234,21 +234,6 @@ resource "aws_kms_key_policy" "dnssec_key_policy" {
 
 # Create a DNSSEC key signing key (KSK) for the Route 53 hosted zone using a KMS key
 resource "aws_route53_key_signing_key" "dnssec_kms_key" {
-  hosted_zone_id            = data.aws_route53_zone.fozdigitalz_com.zone_id
-  name                      = "dnssec-kms-key"
-  key_management_service_arn = aws_kms_key.dnssec_key.arn
-  depends_on = [aws_kms_key_policy.dnssec_key_policy]
-}
-
-# Enable DNSSEC for the specified Route 53 hosted zone
-resource "aws_route53_hosted_zone_dnssec" "dnssec" {
-  hosted_zone_id = data.aws_route53_zone.fozdigitalz_com.zone_id
-  depends_on = [aws_route53_key_signing_key.dnssec_kms_key]
-}
-
-
-# Create a DNSSEC key signing key (KSK) for the Route 53 hosted zone using a KMS key
-resource "aws_route53_key_signing_key" "dnssec_kms_key" {
   hosted_zone_id   = data.aws_route53_zone.fozdigitalz_com.zone_id
   name             = "dnssec-kms-key"
   key_management_service_arn = aws_kms_key.dnssec_key.arn
