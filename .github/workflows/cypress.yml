@@ -20,15 +20,25 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y gh
 
+      - name: Debug GitHub CLI Output
+        run: |
+          run_id=${{ github.event.workflow_run.id }}
+          repo=${{ github.repository }}
+          echo "Fetching jobs for run ID: $run_id"
+          gh api repos/$repo/actions/runs/$run_id/jobs --jq '.jobs[] | {name, conclusion}'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
       - name: Get Workflow Run Jobs
         id: check-jobs
         run: |
           run_id=${{ github.event.workflow_run.id }}
           repo=${{ github.repository }}
-          jobs=$(gh api repos/$repo/actions/runs/$run_id/jobs --jq '.jobs[] | select(.name == "infrastructure-deployment") | .conclusion')
-          echo "Job conclusion: $jobs"
+          job_conclusion=$(gh api repos/$repo/actions/runs/$run_id/jobs --jq '[.jobs[] | select(.name == "infrastructure-deployment")][0].conclusion')
 
-          if [[ "$jobs" == "success" ]]; then
+          echo "Job conclusion: $job_conclusion"
+
+          if [[ "$job_conclusion" == "\"success\"" ]]; then
             echo "deploy_succeeded=true" >> $GITHUB_OUTPUT
           else
             echo "deploy_succeeded=false" >> $GITHUB_OUTPUT
