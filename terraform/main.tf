@@ -198,14 +198,16 @@ resource "aws_kms_key_policy" "dnssec_key_policy" {
         Action   = [ "kms:PutKeyPolicy", "kms:DeleteAlias", "kms:CreateAlias", "kms:DescribeKey", "kms:ListAliases" ]
         Resource = aws_kms_key.dnssec_key.arn
       },
-      # Allow your IAM user (Fidelisesq) to get and put key policies
+      # Allow my IAM User to get and put key policies
       {
         Effect    = "Allow"
         Principal = { AWS = "arn:aws:iam::${data.aws_caller_identity.current.account_id}:user/Fidelisesq" }
         Action   = [
           "kms:PutKeyPolicy",
           "kms:GetKeyPolicy",  # Allowing GetKeyPolicy action
-          "kms:DescribeKey"
+          "kms:DescribeKey",
+          "kms:GetKeyRotationStatus"
+
         ]
         Resource = aws_kms_key.dnssec_key.arn
       }
