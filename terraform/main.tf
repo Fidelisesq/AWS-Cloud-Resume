@@ -171,6 +171,9 @@ data "aws_route53_zone" "fozdigitalz_com" {
   name = "fozdigitalz.com"
 }
 
+#Declare the region data resource
+data "aws_region" "current" {}
+
 # Create a KMS key for DNSSEC signing in Route 53 + policy
 resource "aws_kms_key" "dnssec_key" {
   description             = "KMS key for Route 53 DNSSEC signing"
