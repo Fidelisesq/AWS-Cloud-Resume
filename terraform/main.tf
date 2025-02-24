@@ -218,7 +218,7 @@ resource "aws_kms_key" "dnssec_key" {
         }
         Action   = [
           "kms:PutKeyPolicy",
-          "kms:GetKeyPolicy",  # Ensuring you can retrieve the policy
+          "kms:GetKeyPolicy",  # Explicitly allow GetKeyPolicy
           "kms:DescribeKey"
         ]
         Resource = "*"  # Use a wildcard instead of self-referencing the key ARN
