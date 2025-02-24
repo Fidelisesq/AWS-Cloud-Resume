@@ -180,7 +180,7 @@ resource "aws_kms_key" "dnssec_key" {
 
   key_usage = "ENCRYPT_DECRYPT"
 
-  # Key policy allowing Route 53 to use the key
+  # Key policy allowing Route 53 to use the key and root account to manage it
   policy = jsonencode({
     Version = "2012-10-17"
     Statement = [
@@ -194,10 +194,25 @@ resource "aws_kms_key" "dnssec_key" {
           "kms:Decrypt"
         ]
         Resource = "*"
+      },
+      {
+        Effect = "Allow"
+        Principal = {
+          AWS = "arn:aws:iam::<account-id>:root"
+        }
+        Action = [
+          "kms:PutKeyPolicy",
+          "kms:DeleteAlias",
+          "kms:CreateAlias",
+          "kms:DescribeKey",
+          "kms:ListAliases"
+        ]
+        Resource = "*"
       }
     ]
   })
 }
+
 
 # Create a DNSSEC key signing key (KSK) for the Route 53 hosted zone using a KMS key
 resource "aws_route53_key_signing_key" "dnssec_kms_key" {

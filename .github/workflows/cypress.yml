@@ -37,7 +37,7 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Stop if infrastructure-deployment did not succeed
-        if: ${{ steps.check-jobs.outputs.deploy_succeeded != 'true' }}
+        if: steps.check-jobs.outputs.deploy_succeeded != 'true'
         run: |
           echo "The infrastructure-deployment job did not succeed. Exiting..."
           exit 1
@@ -63,7 +63,7 @@ jobs:
       - name: Save Cypress status
         id: cypress-status
         run: |
-          if [ $? -eq 0 ]; then
+          if [ "${{ job.status }}" == "success" ]; then
             echo "Cypress tests passed!"
             echo "cypress-status=success" >> $GITHUB_ENV
           else
