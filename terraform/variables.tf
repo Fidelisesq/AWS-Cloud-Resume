@@ -59,18 +59,37 @@ variable "aws_region" {
   type        = string
 }
 
-/*
-variable "domain_name" {
-  description = "The domain name for Route 53 hosted zone"
-  type        = string
-}
-*/
-
 #DNSSEC Variables for Domain Name
 variable "dnssec_algorithm" {}
 variable "dnssec_digest" {}
 variable "dnssec_digest_type" {}
 variable "dnssec_key_tag" {}
+
+variable "dnssec_algorithm" {
+  description = "The DNSSEC algorithm"
+  type        = string
+  default     = "RSASHA256"  # RSA with SHA-256
+}
+
+variable "dnssec_digest" {
+  description = "The DNSSEC digest"
+  type        = string
+  default     = "SHA-256"  
+}
+
+variable "dnssec_digest_type" {
+  description = "The DNSSEC digest type"
+  type        = string
+  default     = "SHA256"  #secure digest algorithm with SHA-256
+}
+
+variable "dnssec_key_tag" {
+  description = "The DNSSEC key tag"
+  type        = number
+  default     = 12345  #(usually auto-generated)
+}
+
+
 
 
 
