@@ -171,9 +171,6 @@ data "aws_route53_zone" "fozdigitalz_com" {
   name = "fozdigitalz.com"
 }
 
-# Declare the region data resource
-data "aws_region" "current" {}
-
 # Declare the caller identity data resource
 data "aws_caller_identity" "current" {}
 
