@@ -214,6 +214,7 @@ resource "aws_kms_key_policy" "dnssec_key_policy" {
   })
 }
 
+
 # Create the DNSSEC key signing key
 resource "aws_route53_key_signing_key" "dnssec_kms_key" {
   hosted_zone_id = data.aws_route53_zone.fozdigitalz_com.zone_id
