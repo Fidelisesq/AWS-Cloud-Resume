@@ -175,7 +175,6 @@ resource "aws_route53_record" "cloud_resume_record" {
 resource "aws_kms_key" "dnssec_key" {
   description             = "KMS key for Route 53 DNSSEC signing"
   deletion_window_in_days = 30
-  enable_key_rotation     = true
   key_usage               = "SIGN_VERIFY"
   customer_master_key_spec = "ECC_NIST_P256"
 }
@@ -222,6 +221,7 @@ resource "aws_route53_key_signing_key" "dnssec_kms_key" {
 # Enable DNSSEC for the hosted zone
 resource "aws_route53_hosted_zone_dnssec" "dnssec" {
   hosted_zone_id = data.aws_route53_zone.fozdigitalz_com.zone_id
+  depends_on = [ aws_route53_key_signing_key.dnssec_kms_key ]
 }
 
 
