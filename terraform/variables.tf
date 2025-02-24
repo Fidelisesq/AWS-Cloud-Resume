@@ -59,5 +59,19 @@ variable "aws_region" {
   type        = string
 }
 
+/*
+variable "domain_name" {
+  description = "The domain name for Route 53 hosted zone"
+  type        = string
+}
+*/
+
+#DNSSEC Variables for Domain Name
+variable "dnssec_algorithm" {}
+variable "dnssec_digest" {}
+variable "dnssec_digest_type" {}
+variable "dnssec_key_tag" {}
+
+
 
 

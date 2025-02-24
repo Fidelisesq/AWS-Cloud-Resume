@@ -161,18 +161,37 @@ resource "aws_cloudfront_distribution" "cloud_resume_distribution" {
 resource "aws_route53_record" "cloud_resume_record" {
   zone_id = data.aws_route53_zone.fozdigitalz_com.zone_id
   name    = "fidelis-resume.fozdigitalz.com"
-  type    = "A"
-
-  alias {
-    name                   = aws_cloudfront_distribution.cloud_resume_distribution.domain_name
-    zone_id                = aws_cloudfront_distribution.cloud_resume_distribution.hosted_zone_id
-    evaluate_target_health = false
-  }
+  type    = "CNAME"
+  ttl     = 300
+  records = [aws_cloudfront_distribution.cloud_resume_distribution.domain_name]
 }
 
-# Route 53 hosted zone
+
+# Fetch the Route 53 hosted zone info for fozdigitalz.com
 data "aws_route53_zone" "fozdigitalz_com" {
   name = "fozdigitalz.com"
+}
+
+# Create a KMS key for DNSSEC signing in Route 53
+resource "aws_kms_key" "dnssec_key" {
+  description = "KMS key for Route 53 DNSSEC signing"
+  deletion_window_in_days = 30
+  enable_key_rotation     = true
+}
+
+# Create a DNSSEC key signing key (KSK) for the Route 53 hosted zone using a KMS key
+resource "aws_route53_key_signing_key" "dnssec_kms_key" {
+  hosted_zone_id   = data.aws_route53_zone.fozdigitalz_com.zone_id
+  name             = "dnssec-kms-key"
+  key_management_service_arn = aws_kms_key.dnssec_key.arn
+  depends_on = [aws_kms_key.dnssec_key]
+}
+
+
+# Enable DNSSEC for the specified Route 53 hosted zone
+resource "aws_route53_hosted_zone_dnssec" "dnssec" {
+  hosted_zone_id = data.aws_route53_zone.fozdigitalz_com.zone_id
+  depends_on = [aws_route53_key_signing_key.dnssec_kms_key]
 }
 
 # DynamoDB table for visitor count
@@ -470,24 +489,12 @@ resource "aws_sns_topic_policy" "api_alerts_policy" {
   })
 }
 
-
-
 #Email subscription to SNS topic
 resource "aws_sns_topic_subscription" "email_alert" {
   topic_arn = aws_sns_topic.api_alerts.arn
   protocol  = "email"
   endpoint  = var.email_address
 }
-
-/*
-#PagerDuty Subscription Directly to SNS
-resource "aws_sns_topic_subscription" "pagerduty_sub" {
-  topic_arn = aws_sns_topic.api_alerts.arn
-  protocol  = "https"
-  endpoint  = "https://events.eu.pagerduty.com/integration/57fa85da4b2a4705c123220848ab63d8/enqueue"
-  raw_message_delivery = false
-}
-*/
 
 #Store PagerDuty Integration URL in Secret Manager
 resource "aws_secretsmanager_secret" "pagerduty_integration_url" {

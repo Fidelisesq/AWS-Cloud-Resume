@@ -2,33 +2,60 @@ name: Cypress Tests
 
 on:
   workflow_run:
-    workflows: ["Deploy Infrastructure"]  # Name of the workflow you want to wait for
+    workflows: ["Deploy Infrastructure"]
     types:
       - completed
 
 jobs:
   cypress-run:
     runs-on: ubuntu-latest
-    if: ${{ github.event.workflow_run.conclusion == 'success' }}  # Ensure it runs only if the previous workflow succeeded
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
 
+      - name: Install GitHub CLI
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y gh
+
+      - name: Get Workflow Run Jobs
+        id: check-jobs
+        run: |
+          run_id=${{ github.event.workflow_run.id }}
+          repo=${{ github.repository }}
+          jobs=$(gh api repos/$repo/actions/runs/$run_id/jobs --jq '.jobs[] | select(.name == "infrastructure-deployment") | .conclusion')
+          echo "Job conclusion: $jobs"
+
+          if [[ "$jobs" == "success" ]]; then
+            echo "deploy_succeeded=true" >> $GITHUB_ENV
+            echo "::set-output name=deploy_succeeded::true"
+          else
+            echo "deploy_succeeded=false" >> $GITHUB_ENV
+            echo "::set-output name=deploy_succeeded::false"
+          fi
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Stop if infrastructure-deployment did not succeed
+        if: ${{ steps.check-jobs.outputs.deploy_succeeded != 'true' }}
+        run: |
+          echo "The infrastructure-deployment job did not succeed. Exiting..."
+          exit 1
+
       - name: Set up Node.js
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
-          node-version: '16'  # Ensure the correct Node.js version
+          node-version: '16'
 
       - name: Install dependencies
-        run: npm install  # Install all dependencies, including Cypress
+        run: npm install
 
       - name: Cypress run
         uses: cypress-io/github-action@v6
         with:
-          wait-on: 'https://fidelis-resume.fozdigitalz.com/'  # Your CloudFront URL
-          wait-on-timeout: 60  # Timeout for the wait-on command
+          wait-on: 'https://fidelis-resume.fozdigitalz.com/'
+          wait-on-timeout: 60
           record: true
-          parallel: false  # Run tests in a single instance
         env:
           CYPRESS_RECORD_KEY: ${{ secrets.CYPRESS_RECORD_KEY }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -36,7 +63,7 @@ jobs:
       - name: Save Cypress status
         id: cypress-status
         run: |
-          if [ "${{ job.status }}" == "success" ]; then
+          if [ $? -eq 0 ]; then
             echo "Cypress tests passed!"
             echo "cypress-status=success" >> $GITHUB_ENV
           else
