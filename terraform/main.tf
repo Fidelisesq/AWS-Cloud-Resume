@@ -176,7 +176,8 @@ resource "aws_kms_key" "dnssec_key" {
   description             = "KMS key for Route 53 DNSSEC signing"
   deletion_window_in_days = 30
   enable_key_rotation     = true
-  key_usage               = "ENCRYPT_DECRYPT"
+  key_usage               = "SIGN_VERIFY"
+  customer_master_key_spec = "ECC_NIST_P256"
 }
 
 # Define the KMS key policy
@@ -188,8 +189,8 @@ resource "aws_kms_key_policy" "dnssec_key_policy" {
     Statement = [
       {
         Effect    = "Allow"
-        Principal = { Service = "route53.amazonaws.com" }
-        Action   = [ "kms:Encrypt", "kms:Decrypt" ]
+        Principal = { Service = "dnssec-route53.amazonaws.com" }
+        Action   = [ "kms:Encrypt", "kms:Decrypt", "kms:GetPublicKey", "kms:Sign", "kms:DescribeKey" ]
         Resource = aws_kms_key.dnssec_key.arn
       },
       {
