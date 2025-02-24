@@ -15,7 +15,6 @@ provider "aws" {
 
 data "aws_caller_identity" "current" {}
 
-
 # S3 bucket for static website
 resource "aws_s3_bucket" "cloud_resume_bucket" {
   bucket        = var.bucket_name
@@ -180,7 +179,6 @@ resource "aws_kms_key" "dnssec_key" {
 
   key_usage = "ENCRYPT_DECRYPT"
 
-  # Key policy allowing Route 53 to use the key and root account to manage it
   policy = jsonencode({
     Version = "2012-10-17"
     Statement = [
@@ -198,7 +196,7 @@ resource "aws_kms_key" "dnssec_key" {
       {
         Effect = "Allow"
         Principal = {
-          AWS = "arn:aws:iam::<account-id>:root"
+          AWS = "arn:aws:iam::${data.aws_caller_identity.current.account_id}:root"
         }
         Action = [
           "kms:PutKeyPolicy",
@@ -212,6 +210,7 @@ resource "aws_kms_key" "dnssec_key" {
     ]
   })
 }
+
 
 
 # Create a DNSSEC key signing key (KSK) for the Route 53 hosted zone using a KMS key
