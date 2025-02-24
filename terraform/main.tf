@@ -172,7 +172,7 @@ data "aws_route53_zone" "fozdigitalz_com" {
   name = "fozdigitalz.com"
 }
 
-
+/*
 # Create the KMS key (without setting the policy initially)
 resource "aws_kms_key" "dnssec_key" {
   description             = "KMS key for Route 53 DNSSEC signing"
@@ -240,7 +240,7 @@ resource "aws_route53_hosted_zone_dnssec" "dnssec" {
   hosted_zone_id = data.aws_route53_zone.fozdigitalz_com.zone_id
   depends_on = [aws_route53_key_signing_key.dnssec_kms_key]
 }
-
+*/
 
 
 # DynamoDB table for visitor count
