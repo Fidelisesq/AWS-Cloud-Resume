@@ -548,5 +548,5 @@ jobs:
 
 ## **Conclusion**
 
-This project demonstrates how to build a scalable, secure, and cost-efficient serverless resume website on AWS. By leveraging Terraform for infrastructure as code and GitHub Actions for CI/CD, the entire deployment process is automated and reproducible. The use of serverless technologies ensures minimal operational overhead, while monitoring and alerting systems provide visibility into the system’s health.
+This project demonstrates how to build a scalable, secure, and cost-efficient serverless resume website on AWS. By leveraging Terraform for infrastructure as code and GitHub Actions for CI/CD, the entire deployment process is automated and reproducible. The use of serverless technologies ensures minimal operational overhead, while monitoring and alerting systems provide visibility into the system’s health..
 
