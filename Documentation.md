@@ -453,6 +453,9 @@ resource "aws_sns_topic_subscription" "email_alert" {
 }
 ```
 
+`Lambda Error Email Notification`
+![Lambda-Error-Notification](https://github.com/Fidelisesq/AWS-Cloud-Resume/blob/main/Images%2BVideos/Email%20error-1.png)
+
 #### **PagerDuty Integration**
 
 ```hcl
@@ -580,6 +583,17 @@ resource "aws_lambda_permission" "allow_sns_invoke" {
 }
 
 ```
+`PagerDuty Getting Alerts from Lambda`
+
+![PagerDuty Alert-1](https://github.com/Fidelisesq/AWS-Cloud-Resume/blob/main/Images%2BVideos/PagerDuty-2.png)
+
+| ![PagerDuty Alert-2](https://github.com/Fidelisesq/AWS-Cloud-Resume/blob/main/Images%2BVideos/PagerDuty-1.png) | ![PagerDuty Alert-3](https://github.com/Fidelisesq/AWS-Cloud-Resume/blob/main/Images%2BVideos/PagerDuty-3.png) |
+|---|---|
+
+`PagerDuty App Push Notification`
+| ![PagerDuty Alert-4](https://github.com/Fidelisesq/AWS-Cloud-Resume/blob/main/Images%2BVideos/PagerDuty-4.jpg) | ![PagerDuty Alert-5](https://github.com/Fidelisesq/AWS-Cloud-Resume/blob/main/Images%2BVideos/PagerDuty-5.jpg) |
+|---|---|
+
 
 #### **Slack Integration**
 
@@ -712,6 +726,9 @@ resource "aws_sns_topic_subscription" "sns_to_slack_subscription" {
 }
 
 ```
+`Slack Alert from SNS-Lambda`
+
+![Slack-alert](https://github.com/Fidelisesq/AWS-Cloud-Resume/blob/main/Images%2BVideos/Slack%20Notification-1.png)
 - **CloudWatch Alarms**: Monitors API Gateway and Lambda for errors and latency.
 - **SNS Topic**: Centralised notification system for alerts. My slack & Email & PagerDuty were subscribed to my SNS.
 - **PagerDuty Integration**: Sends alerts to PagerDuty for critical issues.
@@ -983,15 +1000,11 @@ jobs:
 #### **Challenges & Strategies**
 
 `Screenshot of suuccessful End-to-End Design Test`
-![Cypress end-to-end-test](https://github.com/Fidelisesq/AWS-Cloud-Resume/blob/main/Images%2BVideos/Cypress-Test-33.png)
+![Cypress end-to-end-test](https://github.com/Fidelisesq/AWS-Cloud-Resume/blob/main/Images%2BVideos/Cypress-Test-2.png)
 
-![Cypress end-to-end-test-2](https://github.com/Fidelisesq/AWS-Cloud-Resume/blob/main/Images%2BVideos/Cypress-Test-2.png)
 
-![Cypress end-to-end-test-3](https://github.com/Fidelisesq/AWS-Cloud-Resume/blob/main/Images%2BVideos/Cypress-Test-11.png)
-
-| ![Image 1](https://github.com/Fidelisesq/AWS-Cloud-Resume/blob/main/Images%2BVideos/Cypress-Test-2.png) | ![Image 2](https://github.com/Fidelisesq/AWS-Cloud-Resume/blob/main/Images%2BVideos/Cypress-Test-11.png) |
+| ![Image 1](https://github.com/Fidelisesq/AWS-Cloud-Resume/blob/main/Images%2BVideos/Cypress-Test-33.png) | ![Image 2](https://github.com/Fidelisesq/AWS-Cloud-Resume/blob/main/Images%2BVideos/Cypress-Test-11.png) |
 |---|---|
-
 
 
 ---
