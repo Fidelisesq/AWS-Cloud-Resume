@@ -12,7 +12,6 @@ terraform {
 provider "aws" {
   region = "us-east-1" # Set the deployment region
 }
-
 # Declare the caller identity data resource
 data "aws_caller_identity" "current" {}
 
@@ -771,7 +770,7 @@ resource "aws_iam_role_policy" "sns_to_slack_policy" {
 }
 
 
-# Create Lambda_to_Slack Function & retrieve slack webhookurl from AWS Secret Manager
+# Create Lambda_to_Slack Function & retrieve slack webhook URL from AWS Secret Manager
 resource "aws_lambda_function" "sns_to_slack" {
   filename      = "lambda_to_slack.zip"  # Zip your Python script before deployment
   function_name = "SNS-to-Slack"

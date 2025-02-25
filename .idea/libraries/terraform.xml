@@ -1,0 +1,12 @@
+<component name="libraryTable">
+  <library name="terraform">
+    <CLASSES>
+      <root url="jar://$PROJECT_DIR$/terraform/lambda_to_slack.zip!/" />
+      <root url="jar://$PROJECT_DIR$/terraform/lambda_to_pagerduty.zip!/" />
+      <root url="jar://$PROJECT_DIR$/terraform/lambda_layer.zip!/" />
+      <root url="jar://$PROJECT_DIR$/terraform/visitor_counter_lambda.zip!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>

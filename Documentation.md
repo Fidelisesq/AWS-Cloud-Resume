@@ -1,15 +1,16 @@
+![Result-Page](https://github.com/Fidelisesq/AWS-Cloud-Resume/blob/main/Images%2BVideos/Result-page1.png)
+
 # **Hosting a Serverless Resume Website on AWS with Terraform and CI/CD**
 
-In this blog post, I’ll walk you through how I implemented a serverless resume website hosted on AWS. The project leverages AWS services like S3, CloudFront, Lambda, DynamoDB, API Gateway, and AWS WAF, all deployed and managed using Terraform in a CI/CD pipeline powered by GitHub. This setup ensures high availability, scalability, and security while maintaining cost efficiency.
+Building a serverless resume website on AWS isn’t just about hosting a static page. It is like assembling a high-performance engine. When I decided to create my resume website, I wanted it to be more than just a digital placeholder—it had to be scalable, secure, and cost-efficient. Each component—S3, CloudFront, Lambda, DynamoDB, API Gateway, Route53+DNSSEC to Monitoring tools and AWS WAF—plays a critical role, while Terraform and GitHub CI/CD act as the control systems, ensuring everything runs smoothly. The result? A scalable, secure, and cost-efficient website. Let’s take a closer look under the hood!
 
 ---
 
 ## **Project Overview**
-
 The goal of this project was to enhance the accessibility and visibility of my resume by hosting it as a responsive website. The website is built using serverless technologies, ensuring minimal operational overhead and maximum scalability. Here’s a high-level breakdown of the architecture:
 
 1. **Frontend**: A static HTML resume hosted on **Amazon S3** and served via **CloudFront** for global content delivery.
-2. **Backend**: A serverless API built with **AWS Lambda** and **API Gateway** to handle dynamic functionality (e.g., visitor counter).
+2. **Backend**: A serverless REST API built with **AWS Lambda** and **API Gateway** to handle dynamic functionality (e.g., visitor counter).
 3. **Database**: **DynamoDB** to store and retrieve data (e.g., visitor counts).
 4. **Security**: **AWS WAF** to protect the website from common web exploits.
 5. **DNS and DNSSEC**: **Route 53** for DNS management and DNSSEC for enhanced security.
@@ -21,7 +22,7 @@ The goal of this project was to enhance the accessibility and visibility of my r
 
 ## **Terraform Configuration**
 
-The entire infrastructure is defined using Terraform, ensuring reproducibility and scalability. Below is a detailed explanation of the Terraform configuration.
+The entire infrastructure is defined using Terraform, ensuring reproducibility and scalability. Below is a detailed explanation of the Terraform configuration. `Note:` You can find all configuration files in my [Github.](https://github.com/Fidelisesq/AWS-Cloud-Resume)
 
 ---
 
@@ -90,8 +91,9 @@ resource "aws_s3_bucket_policy" "cloud_resume_policy" {
 
 - **S3 Bucket**: Stores the static HTML file for the resume.
 - **Versioning**: Enabled to keep track of changes.
-- **CORS**: Allows cross-origin requests from the custom domain.
+- **CORS**: Allows cross-origin requests from the custom domain, which I specied in the S3 CORS policy.
 - **Bucket Policy**: Restricts access to the bucket, allowing only CloudFront to serve the content.
+- **Challenges**: CORS setting was my major challenge here as browswers were blocking requests to S3 bucket due to icorrect CORS headers. I checked AWS documentation & used browser developers tools to debug and setup cache invalidation as Cloudfront was still serving old contents even though my CORS is now updated. For HTTPS & custom domain, I followed AWS best practices to set up ACM and Route 53, ensuring a secure and reliable custom domain setup.
 
 ---
 
@@ -117,10 +119,63 @@ resource "aws_lambda_function" "visitor_counter" {
     }
   }
 }
-```
 
-- **Lambda Function**: Handles the logic for incrementing and retrieving visitor counts.
-- **Environment Variables**: Passes the DynamoDB table name to the Lambda function.
+# IAM Role for Lambda
+resource "aws_iam_role" "lambda_exec" {
+  name = "lambda_exec_role"
+
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17",
+    Statement = [
+      {
+        Action = "sts:AssumeRole",
+        Effect = "Allow",
+        Principal = {
+          Service = "lambda.amazonaws.com"
+        }
+      }
+    ]
+  })
+}
+
+
+# Custom IAM Policy for Lambda to interact with DynamoDB & write to Cloudwatch logs
+resource "aws_iam_policy" "lambda_policy" {
+  name = "lambda_dynamodb_cloudwatch_policy"
+
+  policy = jsonencode({
+    Version = "2012-10-17",
+    Statement = [
+      {
+        Effect = "Allow",
+        Action = [
+          "dynamodb:GetItem",
+          "dynamodb:PutItem",
+          "dynamodb:UpdateItem",
+          "dynamodb:Query",
+          "dynamodb:Scan"
+        ],
+        Resource = "arn:aws:dynamodb:*:*:table/${aws_dynamodb_table.visitor_count.name}"
+      },
+      {
+        Effect = "Allow",
+        Action = [
+          "logs:CreateLogGroup",
+          "logs:CreateLogStream",
+          "logs:PutLogEvents"
+        ],
+        Resource = "arn:aws:logs:*:*:*"
+      }
+    ]
+  })
+}
+
+# Attach policy to lambda
+resource "aws_iam_role_policy_attachment" "lambda_policy_attachment" {
+  role       = aws_iam_role.lambda_exec.name
+  policy_arn = aws_iam_policy.lambda_policy.arn
+}
+```
 
 #### **DynamoDB Table**
 
@@ -138,15 +193,20 @@ resource "aws_dynamodb_table" "visitor_count" {
 }
 ```
 
-- **DynamoDB Table**: Stores the visitor count with a primary key `id`.
-
-#### **API Gateway**
+#### **API-Gateway Integration**
 
 ```hcl
 # REST API Resource
 resource "aws_api_gateway_rest_api" "cloud_resume_api" {
   name        = "CloudResumeAPI"
   description = "API for visitor counter"
+}
+
+# Root Resource ("/")
+resource "aws_api_gateway_resource" "visitors" {
+  rest_api_id = aws_api_gateway_rest_api.cloud_resume_api.id
+  parent_id   = aws_api_gateway_rest_api.cloud_resume_api.root_resource_id
+  path_part   = "visitors"
 }
 
 # API Gateway Method
@@ -166,10 +226,133 @@ resource "aws_api_gateway_integration" "lambda_integration" {
   type                    = "AWS_PROXY"
   uri                     = aws_lambda_function.visitor_counter.invoke_arn
 }
-```
 
+# Enable CORS for API Gateway- API Method Response
+resource "aws_api_gateway_method_response" "cors_response" {
+  rest_api_id = aws_api_gateway_rest_api.cloud_resume_api.id
+  resource_id = aws_api_gateway_resource.visitors.id
+  http_method = aws_api_gateway_method.get_visitors.http_method
+  status_code = "200"
+
+  response_parameters = {
+    "method.response.header.Access-Control-Allow-Origin"  = true
+    "method.response.header.Access-Control-Allow-Methods" = true
+    "method.response.header.Access-Control-Allow-Headers" = true
+  }
+}
+
+#API Gateway Integration Response
+resource "aws_api_gateway_integration_response" "cors_integration_response" {
+  rest_api_id = aws_api_gateway_rest_api.cloud_resume_api.id
+  resource_id = aws_api_gateway_resource.visitors.id
+  http_method = aws_api_gateway_method.get_visitors.http_method
+  status_code = aws_api_gateway_method_response.cors_response.status_code
+
+  response_parameters = {
+    "method.response.header.Access-Control-Allow-Origin"  = "'https://fidelis-resume.fozdigitalz.com'"
+    "method.response.header.Access-Control-Allow-Methods" = "'GET,OPTIONS'"
+    "method.response.header.Access-Control-Allow-Headers" = "'*'"
+  }
+
+  depends_on = [aws_api_gateway_integration.lambda_integration]
+}
+
+# API Gateway Deployment Stage with Throttling
+resource "aws_api_gateway_deployment" "cloud_resume_deployment" {
+  rest_api_id = aws_api_gateway_rest_api.cloud_resume_api.id
+
+  depends_on = [
+    aws_api_gateway_integration.lambda_integration,
+    aws_api_gateway_method.get_visitors,
+    aws_api_gateway_method_response.cors_response
+  ]
+}
+
+#API Gateway Stage 
+resource "aws_api_gateway_stage" "cloud_resume_stage" {
+  deployment_id = aws_api_gateway_deployment.cloud_resume_deployment.id
+  rest_api_id   = aws_api_gateway_rest_api.cloud_resume_api.id
+  stage_name    = "prod"
+
+  access_log_settings {
+    destination_arn = aws_cloudwatch_log_group.api_gateway_log_group.arn  
+    format = jsonencode({
+      requestId       = "$context.requestId"
+      ip              = "$context.identity.sourceIp"
+      requestTime     = "$context.requestTime"
+      httpMethod      = "$context.httpMethod"
+      resourcePath    = "$context.resourcePath"
+      status          = "$context.status"
+      responseLength  = "$context.responseLength"
+    })
+  }
+
+  tags = {
+    Environment = "Production"
+  }
+
+  depends_on = [
+    aws_api_gateway_account.api_logging,
+    aws_cloudwatch_log_group.api_gateway_log_group
+    ] 
+}
+
+#Enabled Logging & detailed Metrics for API Gateway Stage
+resource "aws_api_gateway_method_settings" "cloud_resume_metrics" {
+  rest_api_id = aws_api_gateway_rest_api.cloud_resume_api.id
+  stage_name  = aws_api_gateway_stage.cloud_resume_stage.stage_name
+
+  method_path = "visitors/GET"
+  settings {
+    metrics_enabled    = true
+    data_trace_enabled = true
+    logging_level      = "ERROR"
+  }
+}
+
+# Permission for API Gateway to invoke Lambda
+resource "aws_lambda_permission" "allow_apigateway" {
+  statement_id  = "AllowAPIGatewayInvoke"
+  action        = "lambda:InvokeFunction"
+  function_name = aws_lambda_function.visitor_counter.function_name
+  principal     = "apigateway.amazonaws.com"
+  source_arn    = "${aws_api_gateway_rest_api.cloud_resume_api.execution_arn}/*/*"
+}
+
+#Grant API Gateway Permissions to Write to CloudWatch Logs
+resource "aws_iam_role" "api_gw_cloudwatch_role" {
+  name = "APIGatewayCloudWatchLogsRole"
+
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [{
+      Effect = "Allow"
+      Principal = {
+        Service = "apigateway.amazonaws.com"
+      }
+      Action = "sts:AssumeRole"
+    }]
+  })
+}
+
+resource "aws_iam_policy_attachment" "api_gw_logging_policy" {
+  name       = "ApiGatewayLoggingPolicy"
+  roles      = [aws_iam_role.api_gw_cloudwatch_role.name]
+  policy_arn = "arn:aws:iam::aws:policy/service-role/AmazonAPIGatewayPushToCloudWatchLogs"
+}
+
+#Attach the IAM Role to API Gateway
+resource "aws_api_gateway_account" "api_logging" {
+  cloudwatch_role_arn = aws_iam_role.api_gw_cloudwatch_role.arn
+}
+
+```
+- **Lambda Function**: Handles the logic for retrieving & incrementing and visitor counts.
+- **Environment Variables**: Passes the DynamoDB table name to the Lambda function.
+- **DynamoDB Table**: Stores the visitor count with a primary key `id`.
 - **API Gateway**: Exposes the Lambda function as a REST API.
 - **Integration**: Connects the API Gateway to the Lambda function.
+- **Challenges**: I spent time here writing the Lambda Function code that checks DynamoDB table, retreive the count and updates it. My function needed a paramenter to recognise a unique visitor I tried `Browser LocalStorage` but it increment count on reload by thesame user. I also tried `Session` and `Cookie` until I settled for IP address. My function stores the hash of unique IP in my DynamoDB table to check unique visitors. `The hash is a One-Way process, so I can't recover the IPs from it.` I ran Postman to test my API-Gateway and fixed permission issues not allowing API-Gatway to invoke my Lambda.
 
 ---
 
@@ -201,8 +384,6 @@ resource "aws_cloudwatch_metric_alarm" "api_errors_alarm" {
 }
 ```
 
-- **CloudWatch Alarms**: Monitors API Gateway and Lambda for errors and latency.
-
 #### **SNS Topic for Notifications**
 
 ```hcl
@@ -212,36 +393,283 @@ resource "aws_sns_topic" "api_alerts" {
 }
 ```
 
-- **SNS Topic**: Centralized notification system for alerts.
+####  **SNS Policy to Allow Subscriptions & Limit Publish to Only CloudWatch**
+```hcl
+# Allow HTTPS, email, & Lambda subscriptions to SNS & restrict publish to SNS to only CloudWatch
+resource "aws_sns_topic_policy" "api_alerts_policy" {
+  arn = aws_sns_topic.api_alerts.arn
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Sid       = "AllowCloudWatchPublish"
+        Effect    = "Allow"
+        Principal = { Service = "cloudwatch.amazonaws.com" }
+        Action    = "SNS:Publish"
+        Resource  = aws_sns_topic.api_alerts.arn
+      },
+      {
+        Sid       = "AllowEmailSubscription"
+        Effect    = "Allow"
+        Principal = "*"
+        Action    = "SNS:Subscribe"
+        Resource  = aws_sns_topic.api_alerts.arn
+        Condition = { StringEqualsIfExists = { "sns:Protocol" = "email" } }
+      },
+      {
+        Sid       = "AllowHttpsSubscription"
+        Effect    = "Allow"
+        Principal = "*"
+        Action    = "SNS:Subscribe"
+        Resource  = aws_sns_topic.api_alerts.arn
+        Condition = { StringEqualsIfExists = { "sns:Protocol" = "https" } }
+      },
+      {
+        Sid       = "AllowLambdaSubscription"
+        Effect    = "Allow"
+        Principal = "*"
+        Action    = "SNS:Subscribe"
+        Resource  = aws_sns_topic.api_alerts.arn
+        Condition = { StringEqualsIfExists = { "sns:Protocol" = "lambda" } }
+      }
+    ]
+  })
+}
+```
+
+#### **Email Subscription**
+
+```hcl
+#Email subscription to SNS topic
+resource "aws_sns_topic_subscription" "email_alert" {
+  topic_arn = aws_sns_topic.api_alerts.arn
+  protocol  = "email"
+  endpoint  = var.email_address
+}
+```
 
 #### **PagerDuty Integration**
 
 ```hcl
-# Lambda function for PagerDuty integration
+
+#Store PagerDuty Integration URL in Secret Manager
+resource "aws_secretsmanager_secret" "pagerduty_integration_url" {
+  name = "pagerduty_integration_url"
+}
+
+resource "aws_secretsmanager_secret_version" "pagerduty_integration_url_value" {
+  secret_id     = aws_secretsmanager_secret.pagerduty_integration_url.id
+  secret_string = var.pagerduty_integration_url
+}
+
+
+#IAM Role for PagerDuty Lambda
+resource "aws_iam_role" "sns_to_pagerduty_lambda_role" {
+  name = "lambda_to_pagerduty_role"
+
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Action    = "sts:AssumeRole"
+        Effect    = "Allow"
+        Principal = {
+          Service = "lambda.amazonaws.com"
+        }
+      }
+    ]
+  })
+}
+
+# IAM policy attachement for PagerDuty Lambda
+resource "aws_iam_role_policy_attachment" "sns_lambda_secrets_access" {
+  policy_arn = aws_iam_policy.lambda_sns_pagerduty_access.arn
+  role       = aws_iam_role.sns_to_pagerduty_lambda_role.name
+}
+
+#IAM Policy for PagerDuty Lambda to Access Secret Manager & Make Requests to PagerDuty API
+resource "aws_iam_policy" "lambda_sns_pagerduty_access" {
+  name        = "lambda_sns_pagerduty_access"
+  description = "Allow Lambda to access SNS, send events to PagerDuty, and write to CloudWatch Logs"
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect   = "Allow"
+        Action   = [
+          "sns:Subscribe",
+          "sns:Publish",
+          "sns:ListSubscriptions",
+          "sns:ListSubscriptionsByTopic"
+        ]
+        Resource = aws_sns_topic.api_alerts.arn
+      },
+      {
+        Effect   = "Allow"
+        Action   = "secretsmanager:GetSecretValue"
+        Resource = aws_secretsmanager_secret.pagerduty_integration_url.arn
+      },
+      {
+        Effect   = "Allow"
+        Action   = "execute-api:Invoke"  # Permission for making API calls to PagerDuty
+        Resource = "arn:aws:apigateway:*::/*"  # Allow Lambda to call any API
+      },
+      {
+        Effect   = "Allow"
+        Action   = [
+          "logs:CreateLogGroup",
+          "logs:CreateLogStream",
+          "logs:PutLogEvents"
+        ]
+        Resource = "arn:aws:logs:*:*:*"  # Allow Lambda to write logs to any CloudWatch Log group/stream
+      }
+    ]
+  })
+}
+
+#Create Lambda Layer to hold dependencies that can forward request to PagerDuty
+resource "aws_lambda_layer_version" "pagerduty_lambda_layer" {
+  layer_name  = "pagerduty_lambda_layer"
+  filename    = "lambda_layer.zip"  # Path to your Lambda layer zip file
+  source_code_hash = filebase64sha256("lambda_layer.zip")  # Ensure Terraform tracks changes
+
+  compatible_runtimes = ["python3.12"]  # Use the runtime compatible with your Lambda function
+}
+
+# Lambda function for PagerDuty integration + layers
 resource "aws_lambda_function" "lambda_to_pagerduty" {
-  filename         = "lambda_to_pagerduty.zip"
-  function_name    = "lambda_to_pagerduty"
+  filename         = "lambda_to_pagerduty.zip"  # Prebuilt zip in my terraform directory
+  function_name    = "lambda_to_pagerduty"      # Lambda name
   role             = aws_iam_role.sns_to_pagerduty_lambda_role.arn
-  handler          = "lambda_to_pagerduty.lambda_handler"
-  runtime          = "python3.12"
-  source_code_hash = filebase64sha256("lambda_to_pagerduty.zip")
+  handler          = "lambda_to_pagerduty.lambda_handler"  
+  runtime          = "python3.12"  # Or your preferred runtime
+  source_code_hash = filebase64sha256("lambda_to_pagerduty.zip")  # Ensures Terraform tracks the zip file changes
 
   environment {
     variables = {
       PAGERDUTY_SECRET_ARN = aws_secretsmanager_secret.pagerduty_integration_url.arn
     }
   }
-}
-```
 
-- **PagerDuty Integration**: Sends alerts to PagerDuty for critical issues.
+  layers = [
+    aws_lambda_layer_version.pagerduty_lambda_layer.arn  # Attach the Lambda layer here
+  ]
+}
+
+#PagerDuty Lambda subscription to SNS
+resource "aws_sns_topic_subscription" "pagerduty_subscription" {
+  topic_arn = aws_sns_topic.api_alerts.arn
+  protocol  = "lambda"
+  endpoint  = aws_lambda_function.lambda_to_pagerduty.arn
+  depends_on = [aws_lambda_function.lambda_to_pagerduty]
+}
+
+#Ensure SNS can Invoke PageDuty_lambda
+resource "aws_lambda_permission" "allow_sns_invoke" {
+  statement_id  = "AllowExecutionFromSNS"
+  action        = "lambda:InvokeFunction"
+  function_name = aws_lambda_function.lambda_to_pagerduty.function_name
+  principal     = "sns.amazonaws.com"
+  source_arn    = aws_sns_topic.api_alerts.arn
+}
+
+```
 
 #### **Slack Integration**
 
 ```hcl
-# Lambda function for Slack integration
+# Create IAM Role for Slack Lambda
+resource "aws_iam_role" "sns_to_slack_lambda_role" {
+  name = "sns_to_slack_lambda_role"
+
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17",
+    Statement = [
+      {
+        Effect   = "Allow",
+        Principal = {
+          Service = "lambda.amazonaws.com"
+        },
+        Action   = "sts:AssumeRole"
+      }
+    ]
+  })
+}
+
+#Policy to allow Lambda Read from Secret Manager
+resource "aws_iam_role_policy" "sns_to_slack_lambda_role_policy" {
+  name = "sns-to-slack-lambda-policy"
+  role = aws_iam_role.sns_to_slack_lambda_role.name
+
+  policy = jsonencode({
+    Version = "2012-10-17",
+    Statement = [
+      {
+        Effect   = "Allow",
+        Action   = "secretsmanager:GetSecretValue",
+        Resource = aws_secretsmanager_secret.slack_webhook_url.arn
+      }
+    ]
+  })
+}
+
+# Attach Policies to Allow Slack Lambda to Read from SNS and Write Logs to slack
+resource "aws_iam_role_policy" "sns_to_slack_policy" {
+  name = "sns_to_slack_policy"
+  role = aws_iam_role.sns_to_slack_lambda_role.id
+
+  policy = jsonencode({
+    Version = "2012-10-17",
+    Statement = [
+      {
+        Effect   = "Allow",
+        Action   = "logs:CreateLogGroup",
+        Resource = "arn:aws:logs:*:*:*"
+      },
+      {
+        Effect   = "Allow",
+        Action   = ["logs:CreateLogStream", "logs:PutLogEvents"],
+        Resource = "arn:aws:logs:*:*:*"
+      },
+      {
+        Effect   = "Allow",
+        Action   = ["sns:Subscribe", "sns:Receive"],
+        Resource = "${aws_sns_topic.api_alerts.arn}"
+      },
+      {
+        Effect   = "Allow",
+        Action   = "lambda:InvokeFunction",
+        Resource = "${aws_lambda_function.sns_to_slack.arn}"
+      },
+
+      {
+        # this policy allows Lambda to publish messages to SNS
+        Effect   = "Allow",
+        Action   = "sns:Publish",
+        Resource = "${aws_sns_topic.api_alerts.arn}"
+      }
+
+    ]
+  })
+}
+
+#Store the Webhook URL in AWS Secrets Manager
+resource "aws_secretsmanager_secret" "slack_webhook_url" {
+  name        = "slack-webhook-url"
+  description = "Slack Webhook URL for Lambda"
+}
+
+resource "aws_secretsmanager_secret_version" "slack_webhook_url_version" {
+  secret_id     = aws_secretsmanager_secret.slack_webhook_url.id
+  secret_string = jsonencode({
+    slack_webhook_url = var.slack_webhook_url
+  })
+}
+
+# Create Lambda_to_Slack Function & retrieve slack webhook URL from AWS Secret Manager
 resource "aws_lambda_function" "sns_to_slack" {
-  filename      = "lambda_to_slack.zip"
+  filename      = "lambda_to_slack.zip"  # Zip your Python script before deployment
   function_name = "SNS-to-Slack"
   role          = aws_iam_role.sns_to_slack_lambda_role.arn
   handler       = "lambda_to_slack.lambda_handler"
@@ -250,20 +678,48 @@ resource "aws_lambda_function" "sns_to_slack" {
 
   environment {
     variables = {
-      SLACK_WEBHOOK_SECRET_NAME = aws_secretsmanager_secret.slack_webhook_url.name
+      SLACK_WEBHOOK_SECRET_NAME = aws_secretsmanager_secret.slack_webhook_url.name  # Reference to the secret
     }
   }
-}
-```
 
+  # Lambda function's permission to access the secret (already done via IAM role policy)
+  depends_on = [
+    aws_secretsmanager_secret.slack_webhook_url
+  ]
+}
+
+# Grant SNS permission to invoke Lambda
+resource "aws_lambda_permission" "allow_sns" {
+  statement_id  = "AllowSNSInvoke"
+  action        = "lambda:InvokeFunction"
+  function_name = aws_lambda_function.sns_to_slack.function_name
+  principal     = "sns.amazonaws.com"
+  source_arn = aws_sns_topic.api_alerts.arn
+  depends_on    = [aws_lambda_function.sns_to_slack]
+}
+
+# Subscribe Slack Lambda to SNS Topic
+resource "aws_sns_topic_subscription" "sns_to_slack_subscription" {
+  topic_arn = aws_sns_topic.api_alerts.arn
+  protocol  = "lambda"
+  endpoint  = aws_lambda_function.sns_to_slack.arn
+  depends_on = [aws_lambda_permission.allow_sns] #Waits for Lambda perssion before subscription
+}
+
+```
+- **CloudWatch Alarms**: Monitors API Gateway and Lambda for errors and latency.
+- **SNS Topic**: Centralised notification system for alerts. My slack & Email & PagerDuty were subscribed to my SNS.
+- **PagerDuty Integration**: Sends alerts to PagerDuty for critical issues.
 - **Slack Integration**: Sends notifications to a Slack channel for non-critical alerts.
+- **Challenges**: While SNS allowed HTTPS subscription for PagerDuty integration, it can't retrieve my integration URL from AWS Secret Manager and it can't natively forward messages to Slack App. So, I employed two Lamba functions, which subsribed to SNS and forwared alerts generated by CloudWatch to my Slack App & PagerDuty for phone notifications.
 
 ---
 
-### **4. Security: AWS WAF**
+### **4. Security: AWS WAF & DNNSEC**
 
-The website is protected by AWS WAF to prevent common web exploits.
+The website is protected by AWS WAF to prevent common web exploits while activating DNSSEC for my domain enhances security by preventing attackers from tampering with DNS responses and ensuring the integrity and authenticity of the domain's DNS data.
 
+#### **WAF Integration with Cloudfront**
 ```hcl
 # AWS WAF resource to front CloudFront
 resource "aws_wafv2_web_acl" "cloudfront_waf" {
@@ -298,8 +754,79 @@ resource "aws_wafv2_web_acl" "cloudfront_waf" {
   }
 }
 ```
+#### **Route53 Custom Domain & DNSSEC**
+
+```hcl
+# Fetch the Route 53 hosted zone info for fozdigitalz.com
+data "aws_route53_zone" "fozdigitalz_com" {
+  name = "fozdigitalz.com"
+}
+
+# Route 53 DNS configuration
+resource "aws_route53_record" "cloud_resume_record" {
+  zone_id = data.aws_route53_zone.fozdigitalz_com.zone_id
+  name    = "fidelis-resume.fozdigitalz.com"
+  type    = "CNAME"
+  ttl     = 300
+  records = [aws_cloudfront_distribution.cloud_resume_distribution.domain_name]
+}
+
+# Create the KMS key (without setting the policy initially)
+resource "aws_kms_key" "dnssec_key" {
+  description             = "KMS key for Route 53 DNSSEC signing"
+  deletion_window_in_days = 30
+  key_usage               = "SIGN_VERIFY"
+  customer_master_key_spec = "ECC_NIST_P256"
+}
+
+# Define the KMS key policy
+resource "aws_kms_key_policy" "dnssec_key_policy" {
+  key_id = aws_kms_key.dnssec_key.key_id
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect    = "Allow"
+        Principal = { Service = "dnssec-route53.amazonaws.com" }
+        Action   = [ "kms:Encrypt", "kms:Decrypt", "kms:GetPublicKey", "kms:Sign", "kms:DescribeKey" ]
+        Resource = aws_kms_key.dnssec_key.arn
+      },
+      {
+        Effect    = "Allow"
+        Principal = { AWS = "arn:aws:iam::${data.aws_caller_identity.current.account_id}:root" }
+        Action   = [ "kms:*"]
+        Resource = aws_kms_key.dnssec_key.arn
+      },
+      # Allow my IAM User to get and put key policies
+      {
+        Effect    = "Allow"
+        Principal = { AWS = "arn:aws:iam::${data.aws_caller_identity.current.account_id}:user/Fidelisesq" }
+        Action   = [
+          "kms:*"
+        ]
+        Resource = aws_kms_key.dnssec_key.arn
+      }
+    ]
+  })
+}
+
+# Create the DNSSEC key signing key
+resource "aws_route53_key_signing_key" "dnssec_kms_key" {
+  hosted_zone_id = data.aws_route53_zone.fozdigitalz_com.zone_id
+  name           = "dnssec-kms-key"
+  key_management_service_arn = aws_kms_key.dnssec_key.arn
+}
+
+# Enable DNSSEC for the hosted zone
+resource "aws_route53_hosted_zone_dnssec" "dnssec" {
+  hosted_zone_id = data.aws_route53_zone.fozdigitalz_com.zone_id
+  depends_on = [ aws_route53_key_signing_key.dnssec_kms_key ]
+}
+```
 
 - **AWS WAF**: Protects the website from DDoS attacks and other web exploits.
+- **Challenges**: Not really a challenge here but I got to discover that AWS WAF won't wotk with the HTTP API. So, I opted for the REST API with WAF to protect it. Later on, I placed WAF before my Cloudfront and introduced throttling to my REST API.
 
 ---
 
@@ -456,13 +983,13 @@ To ensure the website functions as expected after deployment, I implemented auto
 The Cypress tests are executed in a separate GitHub Actions workflow that runs after the `Deploy Infrastructure` workflow completes successfully. Here’s how it works:
 
 1. **Pre-Check Step**:
-   - The workflow first checks if the `infrastructure-deployment` job in the `Deploy Infrastructure` workflow succeeded.
-   - If the deployment was successful, the Cypress tests are executed.
+   - The workflow first verifies that the `infrastructure-deployment` job in the `Deploy Infrastructure` workflow has succeeded.
+   - If the deployment is confirmed as successful, the Cypress tests are initiated.
 
 2. **Cypress Execution**:
-   - The workflow sets up Node.js, installs dependencies, and runs the Cypress tests.
-   - The tests wait for the website to be available at `https://fidelis-resume.fozdigitalz.com/` before running.
-   - Test results are recorded and can be viewed in the Cypress Dashboard.
+   - The workflow sets up Node.js, installs the necessary dependencies, and proceeds to run the Cypress tests.
+   - Before executing the tests, the workflow waits for the website to become available at `https://fidelis-resume.fozdigitalz.com/`.
+   - Test results are recorded and can be accessed in the Cypress Dashboard for detailed analysis.
 
 ```yaml
 name: Cypress Tests
@@ -472,41 +999,13 @@ on:
     workflows: ["Deploy Infrastructure"]
     types:
       - completed
+    branches:
+      - main  # Specify the branch(es) where the workflow should run
 
 jobs:
-  pre-check:
-    runs-on: ubuntu-latest
-    outputs:
-      should_run: ${{ steps.check-jobs.outputs.deploy_succeeded }}
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Install GitHub CLI
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y gh
-
-      - name: Get Workflow Run Jobs
-        id: check-jobs
-        run: |
-          run_id=${{ github.event.workflow_run.id }}
-          repo=${{ github.repository }}
-          jobs=$(gh api repos/$repo/actions/runs/$run_id/jobs --jq '.jobs[] | select(.name == "infrastructure-deployment") | .conclusion')
-          echo "Job conclusion: $jobs"
-
-          if [[ "$jobs" == "success" ]]; then
-            echo "deploy_succeeded=true" >> $GITHUB_OUTPUT
-          else
-            echo "deploy_succeeded=false" >> $GITHUB_OUTPUT
-          fi
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
   cypress-run:
     runs-on: ubuntu-latest
-    needs: pre-check
-    if: needs.pre-check.outputs.should_run == 'true'
+    if: github.event.workflow_run.conclusion == 'success'  # Ensure the workflow only runs if the deployment succeeded
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -541,9 +1040,9 @@ jobs:
           fi
 ```
 
-- **Pre-Check**: Ensures that the Cypress tests only run if the infrastructure deployment was successful.
-- **Cypress Tests**: Validates the functionality of the website, including the visitor counter and overall responsiveness.
-- **Test Recording**: Test results are recorded in the Cypress Dashboard for further analysis.
+- **Cypress Tests**: The test validates the website's functionality, including features like the visitor counter, which proves the backend resources are working and overall responsiveness.
+- **Test Recording**: Results are recorded in the Cypress Dashboard for further review and analysis.
+- **Challenges**: I wanted something else - make the Cypress Test run only when the the `Infrastrucure- Deployment` job in my main workflow runs successfully & skip when the `Infrastructure Cleanup` job runs. However, GitHub Actions does not directly support triggering a workflow from a specific job within another workflow. So, I must combine `workflow_run` event & job outputs to conditionaly achieve it. Guess what, I skipped this part so my test workflow runs whether I deploy or cleanup. I'd learn to make it better in my next improvement. 
 ---
 
 ## **Conclusion**

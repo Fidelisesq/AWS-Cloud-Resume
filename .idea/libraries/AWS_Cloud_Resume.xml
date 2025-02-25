@@ -1,0 +1,11 @@
+<component name="libraryTable">
+  <library name="AWS-Cloud-Resume">
+    <CLASSES>
+      <root url="jar://$PROJECT_DIR$/visitor_counter_lambda.zip!/" />
+      <root url="jar://$PROJECT_DIR$/lambda_to_pagerduty.zip!/" />
+      <root url="jar://$PROJECT_DIR$/lambda_to_slack.zip!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>
