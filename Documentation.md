@@ -990,8 +990,8 @@ jobs:
 ![Cypress end-to-end-test-3](https://github.com/Fidelisesq/AWS-Cloud-Resume/blob/main/Images%2BVideos/Cypress-Test-11.png)
 
 <p float="left">
-  <img src="https://github.com/Fidelisesq/AWS-Cloud-Resume/blob/main/Images%2BVideos/Cypress-Test-2.png" width="200" />
-  <img src="https://github.com/Fidelisesq/AWS-Cloud-Resume/blob/main/Images%2BVideos/Cypress-Test-11.png" width="200" /> 
+  <img src="https://github.com/Fidelisesq/AWS-Cloud-Resume/blob/main/Images%2BVideos/Cypress-Test-2.png" width="900" />
+  <img src="https://github.com/Fidelisesq/AWS-Cloud-Resume/blob/main/Images%2BVideos/Cypress-Test-11.png" width="900" /> 
 </p>
 
 ---
