@@ -1195,7 +1195,7 @@ The implementation of this architecture has resulted in a **highly reliable, sec
 ---
 #### End-to-End Test Demo
 
-[![Watch the video](https://img.youtube.com/vi/VIDEO_ID/0.jpg)](https://aws-certification-fidelis.s3.us-east-1.amazonaws.com/EndtoEnd-Test.mp4)
+[![Watch the video](https://img.youtube.com/vi/DgplJt7eUN8/0.jpg)](https://youtu.be/DgplJt7eUN8)
 
 ---
 
