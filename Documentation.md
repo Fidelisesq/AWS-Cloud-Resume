@@ -13,7 +13,7 @@ The goal of this project was to enhance the accessibility and visibility of my r
    I. **Frontend**: A static HTML resume hosted on **Amazon S3** and served via **CloudFront** for global content delivery.  
    II. **Backend**: A serverless REST API built with **AWS Lambda** and **API Gateway** to handle dynamic functionality & DynamoDB to store visitor count.  
    III. **Monitoring and Alerts**: **CloudWatch**, **SNS**, **PagerDuty**, and **Slack** for monitoring and notifications.  
-   IV. **Security**: **AWS WAF, Route53 & DNSSEC** WAF to protect the website from common web exploits while Route53 for DNS management and DNSSEC for enhanced domain security.  
+   IV. **Security & DNS**: **AWS WAF, Route53 & DNSSEC** WAF to protect the website from common web exploits while Route53 for DNS management and DNSSEC for enhanced domain security.  
 
 2. **CI/CD**: Automated deployment pipeline using **GitHub Actions**.  
 3. **End-to-End Test**: Automated test of site functionality and app backend using Cypress.  
@@ -822,7 +822,7 @@ While SNS allowed HTTPS subscription for PagerDuty integration, it can't retriev
 
 ---
 
-### **IV. Security: AWS WAF & DNSSEC**
+### **IV. Security & DNS: AWS WAF, Route53 & DNSSEC**
 
 The website is protected by AWS WAF to prevent common web exploits while activating DNSSEC for my domain enhances security by preventing attackers from tampering with DNS responses and ensuring the integrity and authenticity of the domain's DNS data.
 
