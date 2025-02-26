@@ -843,7 +843,7 @@ resource "aws_wafv2_web_acl" "cloudfront_waf" {
 
     statement {
       rate_based_statement {
-        limit              = 2000 # Adjust based on your expected traffic
+        limit              = 50 # Adjust based on your expected traffic
         aggregate_key_type = "IP"
       }
     }
@@ -862,7 +862,7 @@ resource "aws_wafv2_web_acl" "cloudfront_waf" {
   }
 }
 
-#Terraform Backend (S3 for State MAnagement)
+#Terraform Backend (S3 for State Management)
 terraform {
   backend "s3" {
     bucket  = "foz-terraform-state-bucket"
