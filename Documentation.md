@@ -1006,7 +1006,6 @@ jobs:
 | ![Image 1](https://github.com/Fidelisesq/AWS-Cloud-Resume/blob/main/Images%2BVideos/Cypress-Test-33.png) | ![Image 2](https://github.com/Fidelisesq/AWS-Cloud-Resume/blob/main/Images%2BVideos/Cypress-Test-11.png) |
 |---|---|
 
-
 ---
 
 ### **6. Automated Testing with Cypress**
