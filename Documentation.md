@@ -670,7 +670,7 @@ resource "aws_lambda_permission" "allow_sns_invoke" {
 
 ![PagerDuty Alert-1](https://github.com/Fidelisesq/AWS-Cloud-Resume/blob/main/Images%2BVideos/PagerDuty-2.png)
 
-| ![PagerDuty Alert-2](https://github.com/Fidelisesq/AWS-Cloud-Resume/blob/main/Images%2BVideos/PagerDuty-1.png) | ![PagerDuty Alert-3](https://github.com/Fidelisesq/AWS-Cloud-Resume/blob/main/Images%2BVideos/PagerDuty-3.png) |
+| ![PagerDuty Alert-2](https://github.com/Fidelisesq/AWS-Cloud-Resume/blob/main/Images%2BVideos/PagerDuty-1.png) | ![PagerDuty Alert-3](https://github.com/Fidelisesq/AWS-Cloud-Resume/blob/main/Images%2BVideos/PagerDuty-333.PNG) |
 |---|---|
 
 `PagerDuty App Push Notification`
@@ -1169,6 +1169,27 @@ I wanted something else - make the Cypress Test run only when the the `Infrastru
 
 ## **4. Results**
 The implementation of this architecture has resulted in a **highly reliable, secure, and scalable personal website**. Using **Cypress**, I conducted end-to-end tests to validate critical functionalities, including the visitor count, custom domain with HTTPS, API Gateway integration, and other site components, ensuring everything works as expected. Screenshots of the test results and videos demonstrating the functionality are included below. The combination of serverless components (Lambda, API Gateway, DynamoDB), global content delivery via CloudFront, and robust security measures (DNSSEC, AWS WAF, HTTPS) ensures a performant, secure, and cost-efficient solution.
+
+#### A quick run down of the resume page
+
+<video width="600" controls>
+  <source src="https://aws-certification-fidelis.s3.us-east-1.amazonaws.com/Video-1.mp4" type="video/mp4">
+  Your browser does not support the video tag.
+</video>
+
+#### CI/CD Pipeline Deployment
+
+<video width="600" controls>
+  <source src="https://aws-certification-fidelis.s3.us-east-1.amazonaws.com/Deploy%2BCypress-Workflow%2BRun.mp4" type="video/mp4">
+  Your browser does not support the video tag.
+</video>
+
+#### Cypress Automated Test
+
+<video width="600" controls>
+  <source src="https://aws-certification-fidelis.s3.us-east-1.amazonaws.com/EndtoEnd-Test.mp4" type="video/mp4">
+  Your browser does not support the video tag.
+</video>
 
 ---
 
