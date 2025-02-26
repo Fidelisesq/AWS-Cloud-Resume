@@ -1,5 +1,4 @@
 ![Result-Page](https://github.com/Fidelisesq/AWS-Cloud-Resume/blob/main/Images%2BVideos/Result-page1.png)
-![Result-Page-2](https://github.com/Fidelisesq/AWS-Cloud-Resume/blob/main/Images%2BVideos/Result-Page2.png)
 
 # **Hosting a Serverless Resume Website on AWS with Terraform and CI/CD**
 
@@ -10,27 +9,29 @@ Building a serverless resume website on AWS isn’t just about hosting a static 
 ## **Project Overview**
 The goal of this project was to enhance the accessibility and visibility of my resume by hosting it as a responsive website. The website is built using serverless technologies, ensuring minimal operational overhead and maximum scalability. Here’s a high-level breakdown of the architecture:
 
-1. **Frontend**: A static HTML resume hosted on **Amazon S3** and served via **CloudFront** for global content delivery.
-2. **Backend**: A serverless REST API built with **AWS Lambda** and **API Gateway** to handle dynamic functionality (e.g., visitor counter).
-3. **Database**: **DynamoDB** to store and retrieve data (e.g., visitor counts).
-4. **Security**: **AWS WAF** to protect the website from common web exploits.
-5. **DNS and DNSSEC**: **Route 53** for DNS management and DNSSEC for enhanced security.
-6. **Monitoring and Alerts**: **CloudWatch**, **SNS**, **PagerDuty**, and **Slack** for monitoring and notifications.
-7. **Infrastructure as Code**: **Terraform** to define and provision all AWS resources.
-8. **CI/CD**: Automated deployment pipeline using **GitHub Actions**.
+1. **Terraform Configuration**  
+   I. **Frontend**: A static HTML resume hosted on **Amazon S3** and served via **CloudFront** for global content delivery.  
+   II. **Backend**: A serverless REST API built with **AWS Lambda** and **API Gateway** to handle dynamic functionality & DynamoDB to store visitor count.  
+   III. **Monitoring and Alerts**: **CloudWatch**, **SNS**, **PagerDuty**, and **Slack** for monitoring and notifications.  
+   IV. **Security**: **AWS WAF, Route53 & DNSSEC** WAF to protect the website from common web exploits while Route53 for DNS management and DNSSEC for enhanced domain security.  
+
+2. **CI/CD**: Automated deployment pipeline using **GitHub Actions**.  
+3. **End-to-End Test**: Automated test of site functionality and app backend using Cypress.  
+4. **Results**: The resume website is globally available, secure, and scalable. The visitor count updates dynamically via the backend, and CloudWatch monitors API health. CI/CD ensures quick updates with automated testing, improving reliability.  
+5. **Conclusion**: Summary of the project and lessons learnt. 
+---
+
+## **1. Terraform Configuration**
+
+The entire infrastructure is defined using Terraform (Infrastructure as Code), ensuring reproducibility and scalability. Below is a detailed explanation of the Terraform configuration. `Note:` You can find all configuration files in my [Github.](https://github.com/Fidelisesq/AWS-Cloud-Resume)
 
 ---
 
-## **Terraform Configuration**
+### **I. Frontend: S3 & CloudFront**
 
-The entire infrastructure is defined using Terraform, ensuring reproducibility and scalability. Below is a detailed explanation of the Terraform configuration. `Note:` You can find all configuration files in my [Github.](https://github.com/Fidelisesq/AWS-Cloud-Resume)
+The frontend consists of a static HTML file hosted on an S3 bucket and served via CloudFront. The bucket is configured with versioning, CORS, and a policy to allow access only via CloudFront. Terraform uses `template_file` to replace  the API-Gateway invocation URL place holder in the script on my html document with the real URL once API-Gateway is created & deployed. Once that is done, terraform copies the html to the s3 bucket.
 
----
-
-### **1. Frontend: S3 and CloudFront**
-
-The frontend consists of a static HTML file hosted on an S3 bucket and served via CloudFront. The bucket is configured with versioning, CORS, and a policy to allow access only via CloudFront.
-
+#### **S3, Policy & CORS**
 ```hcl
 # S3 bucket for static website
 resource "aws_s3_bucket" "cloud_resume_bucket" {
@@ -88,6 +89,88 @@ resource "aws_s3_bucket_policy" "cloud_resume_policy" {
     ]
   })
 }
+
+# Read and replace placeholder in the HTML file dynamically
+data "template_file" "cloud_resume_html" {
+  template = file("${path.module}/cloud-resume.html")
+
+  vars = {
+    api_gateway_url = "https://${aws_api_gateway_rest_api.cloud_resume_api.id}.execute-api.${var.region}.amazonaws.com/${aws_api_gateway_stage.cloud_resume_stage.stage_name}"
+  }
+}
+
+# Upload the updated HTML file to S3 after API Gateway is created
+resource "aws_s3_object" "cloud_resume_html" {
+  bucket              = aws_s3_bucket.cloud_resume_bucket.id
+  key                 = "cloud-resume.html"
+  content             = data.template_file.cloud_resume_html.rendered
+  content_type        = "text/html"
+  content_disposition = "inline"
+
+  depends_on = [aws_api_gateway_stage.cloud_resume_stage]
+
+  tags = {
+    Name        = "Cloud Resume HTML"
+    Environment = "Production"
+  }
+}
+```
+#### **CloudFront Distribution**
+
+```hcl
+#Cloudfront Origin Access Control (OAC)
+resource "aws_cloudfront_origin_access_control" "cloud_resume_oac" {
+  name                              = "cloud-resume-oac"
+  origin_access_control_origin_type = "s3"
+  signing_behavior                  = "always"
+  signing_protocol                  = "sigv4"
+}
+
+# CloudFront distribution
+resource "aws_cloudfront_distribution" "cloud_resume_distribution" {
+  web_acl_id = aws_wafv2_web_acl.cloudfront_waf.arn # Attach WAF to CloudFront
+
+  origin {
+    domain_name = aws_s3_bucket.cloud_resume_bucket.bucket_regional_domain_name
+    origin_id   = "S3-cloud-resume-origin"
+
+    origin_access_control_id = aws_cloudfront_origin_access_control.cloud_resume_oac.id
+  }
+
+  enabled             = true
+  default_root_object = "cloud-resume.html"
+
+  aliases = [var.domain_name] # Custom domain name
+
+  default_cache_behavior {
+    allowed_methods  = ["GET", "HEAD"]
+    cached_methods   = ["GET", "HEAD"]
+    target_origin_id = "S3-cloud-resume-origin"
+
+    viewer_protocol_policy = "redirect-to-https"
+
+    forwarded_values {
+      query_string = false
+      cookies {
+        forward = "none"
+      }
+    }
+  }
+
+  # Viewer certificate for HTTPS
+  viewer_certificate {
+    acm_certificate_arn      = var.acm_certificate_arn
+    ssl_support_method       = "sni-only"
+    minimum_protocol_version = "TLSv1.2_2019"
+  }
+
+  # Restrictions block to meet CloudFront requirements
+  restrictions {
+    geo_restriction {
+      restriction_type = "none" #Allows requests from all geographic locations
+    }
+  }
+}
 ```
 
 - **S3 Bucket**: Stores the static HTML file for the resume.
@@ -100,7 +183,7 @@ CORS setting was my major challenge here as browswers were blocking requests to 
 
 ---
 
-### **2. Backend: Lambda, DynamoDB, and API Gateway**
+### **II. Backend: Lambda, DynamoDB, and API Gateway**
 
 The backend consists of a Lambda function to handle visitor counts, a DynamoDB table to store the counts, and an API Gateway to expose the Lambda function as a REST API.
 
@@ -361,7 +444,7 @@ I spent time here writing the Lambda Function code that checks DynamoDB table, r
 
 ---
 
-### **3. Monitoring and Alerts**
+### **III. Monitoring and Alerts**
 
 The project includes monitoring and alerting using CloudWatch, SNS, PagerDuty, and Slack.
 
@@ -739,7 +822,7 @@ While SNS allowed HTTPS subscription for PagerDuty integration, it can't retriev
 
 ---
 
-### **4. Security: AWS WAF & DNNSEC**
+### **IV. Security: AWS WAF & DNSSEC**
 
 The website is protected by AWS WAF to prevent common web exploits while activating DNSSEC for my domain enhances security by preventing attackers from tampering with DNS responses and ensuring the integrity and authenticity of the domain's DNS data.
 
@@ -850,13 +933,15 @@ resource "aws_route53_hosted_zone_dnssec" "dnssec" {
 ```
 
 - **AWS WAF**: Protects the website from DDoS attacks and other web exploits.
+- **Route53**: Helps with my custom domain.
+- **DNSSEC**: Enhances domain security.
 
 #### **Challenges & Strategies**
-Not really a challenge here but I got to discover that AWS WAF won't wotk with the HTTP API. So, I opted for the REST API with WAF to protect it. Later on, I placed WAF before my Cloudfront and introduced throttling to my REST API.
+Not really a challenge here but I got to discover that AWS WAF won't work with the HTTP API. So, I opted for the REST API with WAF to protect it. Later on, I placed WAF before my Cloudfront and introduced throttling to my REST API. Secondly, I initially created a KMS key needed for my DNSSEC without an active policy that grants me necessary permission like `PutKeyPolicy` & `Disable + DeleteKey` so it locked me out when I needed to modify `Sign` & `Verify` permission for `Route53`. I had to contact `AWS` support for help because I can't modify it nor schedule for deletion. 
 
 ---
 
-### **5. CI/CD Pipeline**
+## **2. CI/CD Pipeline**
 
 The infrastructure is deployed using a CI/CD pipeline powered by GitHub Actions. The Terraform state is stored in an S3 bucket for state management.
 
@@ -1008,7 +1093,7 @@ jobs:
 
 ---
 
-### **6. Automated Testing with Cypress**
+## **3. End-to-End Test with Cypress**
 
 To ensure the website functions as expected after deployment, I implemented automated end-to-end (E2E) tests using **Cypress**. These tests are triggered automatically after a successful infrastructure deployment, ensuring that the website is not only deployed but also fully functional.
 
@@ -1082,7 +1167,12 @@ I wanted something else - make the Cypress Test run only when the the `Infrastru
 
 ---
 
-## **Conclusion**
+## **4. Results**
+The implementation of this architecture has resulted in a **highly reliable, secure, and scalable personal website**. Using **Cypress**, I conducted end-to-end tests to validate critical functionalities, including the visitor count, custom domain with HTTPS, API Gateway integration, and other site components, ensuring everything works as expected. Screenshots of the test results and videos demonstrating the functionality are included below. The combination of serverless components (Lambda, API Gateway, DynamoDB), global content delivery via CloudFront, and robust security measures (DNSSEC, AWS WAF, HTTPS) ensures a performant, secure, and cost-efficient solution.
+
+---
+
+## **5. Conclusion & Lessons Learnt**
 
 This project demonstrates how to build a scalable, secure, and cost-efficient serverless resume website on AWS. By leveraging Terraform for infrastructure as code and GitHub Actions for CI/CD, the entire deployment process is automated and reproducible. The use of serverless technologies ensures minimal operational overhead, while monitoring and alerting systems provide visibility into the system’s health..
 
