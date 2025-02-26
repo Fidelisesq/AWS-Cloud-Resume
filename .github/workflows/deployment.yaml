@@ -68,6 +68,9 @@ jobs:
         id: validate
         run: cd terraform && terraform validate
 
+      - name: Refresh State to Sync
+        run: terraform refresh
+
       - name: Terraform Plan
         id: plan
         run: cd terraform && terraform plan -out=tfplan
@@ -78,7 +81,7 @@ jobs:
           #TF_LOG: DEBUG
         run: cd terraform && terraform apply -auto-approve tfplan
       
-        
+
   infrastructure-cleanup:
     if: >-
       (github.event_name == 'push' && contains(github.event.head_commit.message, 'destroy')) ||
