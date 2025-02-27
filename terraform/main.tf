@@ -922,7 +922,7 @@ resource "aws_wafv2_web_acl" "cloudfront_waf" {
     }
   }
 
-  # Cross-Site Scripting (XSS) Protection Rule (AWS Managed XSS Rule)
+  # Cross-Site Scripting (XSS) Protection Rule (AWS Managed Common Rule Set)
   rule {
     name     = "XSSProtectionRule"
     priority = 4
@@ -945,13 +945,13 @@ resource "aws_wafv2_web_acl" "cloudfront_waf" {
     }
   }
 
+  # Visibility config at the root level
   visibility_config {
     cloudwatch_metrics_enabled = true
     metric_name                = "CloudFrontWAF"
     sampled_requests_enabled   = true
   }
 }
-
 
 #Terraform Backend (S3 for State Management)
 terraform {
