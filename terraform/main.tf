@@ -11,7 +11,6 @@ terraform {
 
 provider "aws" {
   region = "us-east-1" # Set the deployment region
-  alias = "global"
 }
 # Declare the caller identity data resource
 data "aws_caller_identity" "current" {}
