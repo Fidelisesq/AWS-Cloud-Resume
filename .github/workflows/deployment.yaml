@@ -136,7 +136,7 @@ jobs:
           cat <<EOF > terraform/terraform.tfvars
           acm_certificate_arn = "${{ secrets.ACM_CERTIFICATE_ARN }}"
           aws_access_key_id = "${{ secrets.AWS_ACCESS_KEY_ID }}"
-          aws_secret_access-key = "${{ secrets.AWS_SECRET_ACCESS_KEY }}"
+          aws_secret_access_key = "${{ secrets.AWS_SECRET_ACCESS_KEY }}"
           aws_region = "${{ secrets.AWS_DEFAULT_REGION }}"
           bucket_name = "${{ secrets.BUCKET_NAME }}"
           domain_name = "${{ secrets.DOMAIN_NAME }}"
