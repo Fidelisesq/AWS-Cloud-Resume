@@ -158,8 +158,10 @@ resource "aws_wafv2_web_acl_association" "cloudfront_waf_association" {
   resource_arn = aws_cloudfront_distribution.cloud_resume_distribution.arn
   web_acl_arn   = aws_wafv2_web_acl.cloudfront_waf.arn
 
-  depends_on = [aws_cloudfront_distribution.cloud_resume_distribution,
-  aws_wafv2_web_acl.cloudfront_waf]
+  depends_on = [
+  aws_cloudfront_distribution.cloud_resume_distribution,
+  aws_wafv2_web_acl.cloudfront_waf
+  ]
 }
 
 
@@ -833,7 +835,6 @@ resource "aws_sns_topic_subscription" "sns_to_slack_subscription" {
 
 #AWS WAF resource to front Cloudfront
 resource "aws_wafv2_web_acl" "cloudfront_waf" {
-  depends_on = [ aws_cloudfront_distribution.cloud_resume_distribution ]
   name        = "cloudfront-waf"
   description = "WAF for CloudFront"
   scope       = "CLOUDFRONT"
@@ -842,7 +843,6 @@ resource "aws_wafv2_web_acl" "cloudfront_waf" {
     allow {}
   }
 
-  # Rate limiting rule
   rule {
     name     = "RateLimitRule"
     priority = 1
@@ -853,7 +853,7 @@ resource "aws_wafv2_web_acl" "cloudfront_waf" {
 
     statement {
       rate_based_statement {
-        limit              = 2000 # Adjust based on your expected traffic
+        limit              = 2000
         aggregate_key_type = "IP"
       }
     }
@@ -861,75 +861,6 @@ resource "aws_wafv2_web_acl" "cloudfront_waf" {
     visibility_config {
       cloudwatch_metrics_enabled = true
       metric_name                = "RateLimitRule"
-      sampled_requests_enabled   = true
-    }
-  }
-
-  # IP Reputation List Rule (AWS Managed Rule for IP Reputation)
-  rule {
-    name     = "IPReputationRule"
-    priority = 2
-
-    action {
-      block {}
-    }
-
-    statement {
-      managed_rule_group_statement {
-        vendor_name = "AWS"
-        name        = "AWSManagedRulesIPReputationList"
-      }
-    }
-
-    visibility_config {
-      cloudwatch_metrics_enabled = true
-      metric_name                = "IPReputationRule"
-      sampled_requests_enabled   = true
-    }
-  }
-
-  # SQL Injection Protection Rule (AWS Managed SQLi Rule)
-  rule {
-    name     = "SQLInjectionRule"
-    priority = 3
-
-    action {
-      block {}
-    }
-
-    statement {
-      managed_rule_group_statement {
-        vendor_name = "AWS"
-        name        = "AWSManagedRulesSQLiRuleSet"
-      }
-    }
-
-    visibility_config {
-      cloudwatch_metrics_enabled = true
-      metric_name                = "SQLInjectionRule"
-      sampled_requests_enabled   = true
-    }
-  }
-
-  # Cross-Site Scripting (XSS) Protection Rule (AWS Managed XSS Rule)
-  rule {
-    name     = "XSSProtectionRule"
-    priority = 4
-
-    action {
-      block {}
-    }
-
-    statement {
-      managed_rule_group_statement {
-        vendor_name = "AWS"
-        name        = "AWSManagedRulesXSSRuleSet"
-      }
-    }
-
-    visibility_config {
-      cloudwatch_metrics_enabled = true
-      metric_name                = "XSSProtectionRule"
       sampled_requests_enabled   = true
     }
   }
