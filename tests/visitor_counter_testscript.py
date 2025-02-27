@@ -4,7 +4,7 @@ import os
 import hashlib
 from decimal import Decimal
 from datetime import datetime
-from moto import mock_dynamodb  # Updated import
+from moto import mock_aws  # Updated import
 import pytest
 
 # Mock the environment variable for DynamoDB table name
@@ -20,7 +20,7 @@ def hash_ip(ip_address):
 @pytest.fixture
 def setup_dynamodb():
     """ Set up a mock DynamoDB table for testing """
-    with mock_dynamodb():  # Updated mock
+    with mock_aws():  # Updated mock
         dynamodb = boto3.resource("dynamodb", region_name="us-east-1")
         table_name = os.environ['DYNAMODB_TABLE']
 

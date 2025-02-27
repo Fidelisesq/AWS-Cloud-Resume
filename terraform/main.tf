@@ -108,10 +108,9 @@ resource "aws_cloudfront_origin_access_control" "cloud_resume_oac" {
   signing_protocol                  = "sigv4"
 }
 
-
 # CloudFront distribution
 resource "aws_cloudfront_distribution" "cloud_resume_distribution" {
-  web_acl_id = aws_wafv2_web_acl.cloudfront_waf.arn # Attach WAF to CloudFront
+  web_acl_arn = aws_wafv2_web_acl.cloudfront_waf.arn  # Attach WAF to CloudFront
 
   origin {
     domain_name = aws_s3_bucket.cloud_resume_bucket.bucket_regional_domain_name
@@ -154,6 +153,7 @@ resource "aws_cloudfront_distribution" "cloud_resume_distribution" {
     }
   }
 }
+
 
 
 # Fetch the Route 53 hosted zone info for fozdigitalz.com
@@ -824,8 +824,8 @@ resource "aws_sns_topic_subscription" "sns_to_slack_subscription" {
 }
 
 #AWS WAF resource to front Cloudfront
+# AWS WAF WebACL
 resource "aws_wafv2_web_acl" "cloudfront_waf" {
-  depends_on = [aws_cloudfront_distribution.cloud_resume_distribution]
   name        = "cloudfront-waf"
   description = "WAF for CloudFront"
   scope       = "CLOUDFRONT"
@@ -931,7 +931,6 @@ resource "aws_wafv2_web_acl" "cloudfront_waf" {
     metric_name                = "CloudFrontWAF"
     sampled_requests_enabled   = true
   }
-
 }
 
 #Terraform Backend (S3 for State Management)
