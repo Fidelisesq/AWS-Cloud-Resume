@@ -888,7 +888,7 @@ resource "aws_wafv2_web_acl" "cloudfront_waf" {
     statement {
       managed_rule_group_statement {
         vendor_name = "AWS"
-        name        = "AWS-AWSManagedRulesAmazonIpReputationList"
+        name        = "AWSManagedIPReputationList"
       }
     }
 
@@ -912,7 +912,7 @@ resource "aws_wafv2_web_acl" "cloudfront_waf" {
     statement {
       managed_rule_group_statement {
         vendor_name = "AWS"
-        name        = "AWS-AWSManagedRulesAnonymousIpList"
+        name        = "AnonymousIpList"
       }
     }
 
@@ -923,7 +923,7 @@ resource "aws_wafv2_web_acl" "cloudfront_waf" {
     }
   }
   
-
+/*
   # SQL Injection Protection Rule
   rule {
     name     = "SQLInjectionRule"
@@ -936,7 +936,7 @@ resource "aws_wafv2_web_acl" "cloudfront_waf" {
     statement {
       managed_rule_group_statement {
         vendor_name = "AWS"
-        name        = "AWS-AWSManagedRulesSQLiRuleSet"
+        name        = "AWSManagedRulesSQLiRuleSet"
       }
     }
 
@@ -959,7 +959,7 @@ resource "aws_wafv2_web_acl" "cloudfront_waf" {
     statement {
       managed_rule_group_statement {
         vendor_name = "AWS"
-        name        = "AWS-AWSManagedRulesCommonRuleSet"
+        name        = "AWSManagedRulesCommonRuleSet"
       }
     }
 
@@ -983,7 +983,7 @@ resource "aws_wafv2_web_acl" "cloudfront_waf" {
     statement {
       managed_rule_group_statement {
         vendor_name = "AWS"
-        name        = "AWS-AWSManagedRulesKnownBadInputsRuleSet"
+        name        = "AWSManagedRulesKnownBadInputsRuleSet"
       }
     }
 
@@ -993,6 +993,7 @@ resource "aws_wafv2_web_acl" "cloudfront_waf" {
       sampled_requests_enabled   = true
     }
   }
+*/
 
   # Visibility config for the WAF ACL itself
   visibility_config {
