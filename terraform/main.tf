@@ -110,7 +110,6 @@ resource "aws_cloudfront_origin_access_control" "cloud_resume_oac" {
 
 # CloudFront distribution
 resource "aws_cloudfront_distribution" "cloud_resume_distribution" {
-  web_acl_arn = aws_wafv2_web_acl.cloudfront_waf.arn  # Attach WAF to CloudFront
 
   origin {
     domain_name = aws_s3_bucket.cloud_resume_bucket.bucket_regional_domain_name
@@ -152,6 +151,12 @@ resource "aws_cloudfront_distribution" "cloud_resume_distribution" {
       restriction_type = "none" #Allows requests from all geographic locations
     }
   }
+}
+
+# Associate WAF WebACL with CloudFront distribution
+resource "aws_wafv2_web_acl_association" "cloudfront_waf_association" {
+  resource_arn = aws_cloudfront_distribution.cloud_resume_distribution.arn
+  web_acl_id   = aws_wafv2_web_acl.cloudfront_waf.id
 }
 
 
@@ -824,7 +829,6 @@ resource "aws_sns_topic_subscription" "sns_to_slack_subscription" {
 }
 
 #AWS WAF resource to front Cloudfront
-# AWS WAF WebACL
 resource "aws_wafv2_web_acl" "cloudfront_waf" {
   name        = "cloudfront-waf"
   description = "WAF for CloudFront"
