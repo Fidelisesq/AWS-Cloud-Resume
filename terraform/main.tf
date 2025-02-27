@@ -881,8 +881,8 @@ resource "aws_wafv2_web_acl" "cloudfront_waf" {
     name     = "AmazonIPReputationRule"
     priority = 2
 
-    override_action { 
-      count {} 
+    action { 
+      block {} 
     }
 
     statement {
@@ -890,7 +890,7 @@ resource "aws_wafv2_web_acl" "cloudfront_waf" {
         vendor_name = "AWS"
         name        = "AWSManagedRulesAmazonIpReputationList"
 
-        # OPTIONAL: Override specific rules inside the group
+        # Override specific rules inside the group
         rule_action_override {
           action_to_use {
             block {}
