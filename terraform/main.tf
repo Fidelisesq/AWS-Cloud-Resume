@@ -889,6 +889,7 @@ resource "aws_wafv2_web_acl" "cloudfront_waf" {
       managed_rule_group_statement {
         vendor_name = "AWS"
         name        = "AWSManagedRulesAmazonIpReputationList"
+        version     = "1.0" # Add the version parameter
       }
     }
 
@@ -898,7 +899,6 @@ resource "aws_wafv2_web_acl" "cloudfront_waf" {
       sampled_requests_enabled   = true
     }
   }
-
 
   # Anonymous IP List Rule (Blocks VPNs, Proxies, etc.)
   rule {
@@ -913,6 +913,7 @@ resource "aws_wafv2_web_acl" "cloudfront_waf" {
       managed_rule_group_statement {
         vendor_name = "AWS"
         name        = "AWSManagedRulesAnonymousIpList"
+        version     = "1.0" # Add the version parameter
       }
     }
 
@@ -922,7 +923,6 @@ resource "aws_wafv2_web_acl" "cloudfront_waf" {
       sampled_requests_enabled   = true
     }
   }
-  
 
   # SQL Injection Protection Rule
   rule {
@@ -937,6 +937,7 @@ resource "aws_wafv2_web_acl" "cloudfront_waf" {
       managed_rule_group_statement {
         vendor_name = "AWS"
         name        = "AWSManagedRulesSQLiRuleSet"
+        version     = "1.0" # Add the version parameter
       }
     }
 
@@ -947,7 +948,7 @@ resource "aws_wafv2_web_acl" "cloudfront_waf" {
     }
   }
 
-# Common Rule Set (Covers OWASP vulnerabilities, XSS, etc.)
+  # Common Rule Set (Covers OWASP vulnerabilities, XSS, etc.)
   rule {
     name     = "CommonRuleSet"
     priority = 5
@@ -960,6 +961,7 @@ resource "aws_wafv2_web_acl" "cloudfront_waf" {
       managed_rule_group_statement {
         vendor_name = "AWS"
         name        = "AWSManagedRulesCommonRuleSet"
+        version     = "1.0" # Add the version parameter
       }
     }
 
@@ -969,7 +971,6 @@ resource "aws_wafv2_web_acl" "cloudfront_waf" {
       sampled_requests_enabled   = true
     }
   }
-  
 
   # Known Bad Inputs Protection Rule
   rule {
@@ -984,6 +985,7 @@ resource "aws_wafv2_web_acl" "cloudfront_waf" {
       managed_rule_group_statement {
         vendor_name = "AWS"
         name        = "AWSManagedRulesKnownBadInputsRuleSet"
+        version     = "1.0" # Add the version parameter
       }
     }
 
@@ -1001,8 +1003,6 @@ resource "aws_wafv2_web_acl" "cloudfront_waf" {
     sampled_requests_enabled   = true
   }
 }
-
-
 
 #Terraform Backend (S3 for State Management)
 terraform {
