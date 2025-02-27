@@ -878,7 +878,7 @@ resource "aws_wafv2_web_acl" "cloudfront_waf" {
 
   # Amazon IP Reputation List (AWS Managed Rule)
   rule {
-    name     = "AWS-AmazonIpReputationRule"
+    name     = "AmazonIpReputationRule"
     priority = 2
 
     action {
@@ -888,7 +888,7 @@ resource "aws_wafv2_web_acl" "cloudfront_waf" {
     statement {
       managed_rule_group_statement {
         vendor_name = "AWS"
-        name        = "AWSManagedIPReputationList"
+        name        = "AWSManagedRulesAmazonIpReputationList"
       }
     }
 
@@ -912,7 +912,7 @@ resource "aws_wafv2_web_acl" "cloudfront_waf" {
     statement {
       managed_rule_group_statement {
         vendor_name = "AWS"
-        name        = "AnonymousIpList"
+        name        = "AWSManagedRulesAnonymousIpList"
       }
     }
 
@@ -923,7 +923,7 @@ resource "aws_wafv2_web_acl" "cloudfront_waf" {
     }
   }
   
-/*
+
   # SQL Injection Protection Rule
   rule {
     name     = "SQLInjectionRule"
@@ -993,7 +993,6 @@ resource "aws_wafv2_web_acl" "cloudfront_waf" {
       sampled_requests_enabled   = true
     }
   }
-*/
 
   # Visibility config for the WAF ACL itself
   visibility_config {
