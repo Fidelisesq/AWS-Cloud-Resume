@@ -110,8 +110,8 @@ resource "aws_cloudfront_origin_access_control" "cloud_resume_oac" {
 
 # CloudFront distribution
 resource "aws_cloudfront_distribution" "cloud_resume_distribution" {
-  depends_on = [aws_wafv2_web_acl.cloudfront_waf] 
   web_acl_id = aws_wafv2_web_acl.cloudfront_waf.arn
+  depends_on = [aws_wafv2_web_acl.cloudfront_waf] 
   origin {
     domain_name = aws_s3_bucket.cloud_resume_bucket.bucket_regional_domain_name
     origin_id   = "S3-cloud-resume-origin"
