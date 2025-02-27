@@ -155,7 +155,7 @@ resource "aws_cloudfront_distribution" "cloud_resume_distribution" {
 
 # Associate WAF WebACL with CloudFront distribution
 resource "aws_wafv2_web_acl_association" "cloudfront_waf_association" {
-  resource_arn = aws_cloudfront_distribution.cloud_resume_distribution.arn
+  resource_arn = "arn:aws:cloudfront::${data.aws_caller_identity.current.account_id}:distribution/${aws_cloudfront_distribution.cloud_resume_distribution.id}"
   web_acl_arn   = aws_wafv2_web_acl.cloudfront_waf.arn
 
   depends_on = [
