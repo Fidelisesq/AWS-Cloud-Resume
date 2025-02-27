@@ -946,7 +946,7 @@ resource "aws_wafv2_web_acl" "cloudfront_waf" {
       sampled_requests_enabled   = true
     }
   }
-/*
+
 # Common Rule Set (Covers OWASP vulnerabilities, XSS, etc.)
   rule {
     name     = "CommonRuleSet"
@@ -969,8 +969,8 @@ resource "aws_wafv2_web_acl" "cloudfront_waf" {
       sampled_requests_enabled   = true
     }
   }
-  */
-
+  
+/*
   # Known Bad Inputs Protection Rule
   rule {
     name     = "KnownBadInputsRule"
@@ -993,7 +993,7 @@ resource "aws_wafv2_web_acl" "cloudfront_waf" {
       sampled_requests_enabled   = true
     }
   }
-
+*/
   # Visibility config for the WAF ACL itself
   visibility_config {
     cloudwatch_metrics_enabled = true
