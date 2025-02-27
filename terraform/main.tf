@@ -888,7 +888,7 @@ resource "aws_wafv2_web_acl" "cloudfront_waf" {
     statement {
       managed_rule_group_statement {
         vendor_name = "AWS"
-        name        = "AWSManagedRulesIPReputationList"
+        name        = "AWSManagedRulesAmazonIpReputationList"
       }
     }
 
@@ -934,7 +934,7 @@ resource "aws_wafv2_web_acl" "cloudfront_waf" {
     statement {
       managed_rule_group_statement {
         vendor_name = "AWS"
-        name        = "AWSManagedRulesXSSRuleSet"
+        name        = "AWSManagedRulesCommonRuleSet"
       }
     }
 
