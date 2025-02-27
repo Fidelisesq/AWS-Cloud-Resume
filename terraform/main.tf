@@ -888,7 +888,7 @@ resource "aws_wafv2_web_acl" "cloudfront_waf" {
     statement {
       managed_rule_group_statement {
         vendor_name = "AWS"
-        name        = "AWSManagedRulesAmazonIpReputationList"
+        name        = "AWSManagedRulesAmazonIpReputationList" # Ensure this rule group name is correct
       }
     }
 
@@ -911,7 +911,7 @@ resource "aws_wafv2_web_acl" "cloudfront_waf" {
     statement {
       managed_rule_group_statement {
         vendor_name = "AWS"
-        name        = "AWSManagedRulesSQLiRuleSet"
+        name        = "AWSManagedRulesSQLiRuleSet" # Ensure this rule group name is correct
       }
     }
 
@@ -934,7 +934,7 @@ resource "aws_wafv2_web_acl" "cloudfront_waf" {
     statement {
       managed_rule_group_statement {
         vendor_name = "AWS"
-        name        = "AWSManagedRulesCommonRuleSet"
+        name        = "AWSManagedRulesCommonRuleSet" # Ensure this rule group name is correct
       }
     }
 
@@ -945,13 +945,14 @@ resource "aws_wafv2_web_acl" "cloudfront_waf" {
     }
   }
 
-  # Visibility config at the root level
+  # Visibility config at the root level (only once at the bottom)
   visibility_config {
     cloudwatch_metrics_enabled = true
     metric_name                = "CloudFrontWAF"
     sampled_requests_enabled   = true
   }
 }
+
 
 #Terraform Backend (S3 for State Management)
 terraform {
