@@ -923,7 +923,7 @@ resource "aws_wafv2_web_acl" "cloudfront_waf" {
     }
   }
   
-
+/*
   # SQL Injection Protection Rule
   rule {
     name     = "SQLInjectionRule"
@@ -970,7 +970,7 @@ resource "aws_wafv2_web_acl" "cloudfront_waf" {
     }
   }
   
-/*
+
   # Known Bad Inputs Protection Rule
   rule {
     name     = "KnownBadInputsRule"
@@ -1001,6 +1001,7 @@ resource "aws_wafv2_web_acl" "cloudfront_waf" {
     sampled_requests_enabled   = true
   }
 }
+
 
 
 #Terraform Backend (S3 for State Management)
