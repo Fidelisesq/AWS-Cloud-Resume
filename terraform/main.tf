@@ -922,6 +922,7 @@ resource "aws_wafv2_web_acl" "cloudfront_waf" {
     }
   }
 
+/*
   # Cross-Site Scripting (XSS) Protection Rule (AWS Managed Common Rule Set)
   rule {
     name     = "XSSProtectionRule"
@@ -934,7 +935,7 @@ resource "aws_wafv2_web_acl" "cloudfront_waf" {
     statement {
       managed_rule_group_statement {
         vendor_name = "AWS"
-        name        = "AWSManagedRulesCommonRuleSet" # Ensure this rule group name is correct
+        name        = "AWSManagedRulesCommonRuleSet" 
       }
     }
 
@@ -944,8 +945,9 @@ resource "aws_wafv2_web_acl" "cloudfront_waf" {
       sampled_requests_enabled   = true
     }
   }
+  */
 
-  # Visibility config at the root level (only once at the bottom)
+  # Visibility config at the root level
   visibility_config {
     cloudwatch_metrics_enabled = true
     metric_name                = "CloudFrontWAF"
