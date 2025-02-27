@@ -9,7 +9,7 @@ on:
 jobs:
   cypress-run:
     runs-on: ubuntu-latest
-    if: ${{ github.event.workflow_run.conclusion == 'success' }}  # Only run if the previous workflow was successful
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}  # Only runs if deployment job is successful.
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
