@@ -878,7 +878,7 @@ resource "aws_wafv2_web_acl" "cloudfront_waf" {
 
   # Amazon IP Reputation List (AWS Managed Rule)
   rule {
-    name     = "AmazonIpReputationRule"
+    name     = "AWS-AmazonIpReputationRule"
     priority = 2
 
     action {
@@ -888,7 +888,7 @@ resource "aws_wafv2_web_acl" "cloudfront_waf" {
     statement {
       managed_rule_group_statement {
         vendor_name = "AWS"
-        name        = "AWSManagedRulesAmazonIpReputationList"
+        name        = "AWS-AWSManagedRulesAmazonIpReputationList"
       }
     }
 
@@ -912,7 +912,7 @@ resource "aws_wafv2_web_acl" "cloudfront_waf" {
     statement {
       managed_rule_group_statement {
         vendor_name = "AWS"
-        name        = "AWSManagedRulesAnonymousIpList"
+        name        = "AWS-AWSManagedRulesAnonymousIpList"
       }
     }
 
@@ -923,7 +923,7 @@ resource "aws_wafv2_web_acl" "cloudfront_waf" {
     }
   }
   
-/*
+
   # SQL Injection Protection Rule
   rule {
     name     = "SQLInjectionRule"
@@ -936,7 +936,7 @@ resource "aws_wafv2_web_acl" "cloudfront_waf" {
     statement {
       managed_rule_group_statement {
         vendor_name = "AWS"
-        name        = "AWSManagedRulesSQLiRuleSet"
+        name        = "AWS-AWSManagedRulesSQLiRuleSet"
       }
     }
 
@@ -959,7 +959,7 @@ resource "aws_wafv2_web_acl" "cloudfront_waf" {
     statement {
       managed_rule_group_statement {
         vendor_name = "AWS"
-        name        = "AWSManagedRulesCommonRuleSet"
+        name        = "AWS-AWSManagedRulesCommonRuleSet"
       }
     }
 
@@ -983,7 +983,7 @@ resource "aws_wafv2_web_acl" "cloudfront_waf" {
     statement {
       managed_rule_group_statement {
         vendor_name = "AWS"
-        name        = "AWSManagedRulesKnownBadInputsRuleSet"
+        name        = "AWS-AWSManagedRulesKnownBadInputsRuleSet"
       }
     }
 
@@ -993,7 +993,7 @@ resource "aws_wafv2_web_acl" "cloudfront_waf" {
       sampled_requests_enabled   = true
     }
   }
-*/
+
   # Visibility config for the WAF ACL itself
   visibility_config {
     cloudwatch_metrics_enabled = true
