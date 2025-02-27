@@ -2,3 +2,4 @@ terraform.tfvars
 node_modules
 cypress.yml
 visitor_counter_lambdatest.yaml
+tests
