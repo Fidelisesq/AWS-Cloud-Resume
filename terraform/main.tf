@@ -110,7 +110,7 @@ resource "aws_cloudfront_origin_access_control" "cloud_resume_oac" {
 
 # CloudFront distribution
 resource "aws_cloudfront_distribution" "cloud_resume_distribution" {
-
+  web_acl_id = aws_wafv2_web_acl.cloudfront_waf.arn
   origin {
     domain_name = aws_s3_bucket.cloud_resume_bucket.bucket_regional_domain_name
     origin_id   = "S3-cloud-resume-origin"
@@ -153,6 +153,7 @@ resource "aws_cloudfront_distribution" "cloud_resume_distribution" {
   }
 }
 
+/*
 # Associate WAF WebACL with CloudFront distribution
 resource "aws_wafv2_web_acl_association" "cloudfront_waf_association" {
   resource_arn = "arn:aws:cloudfront::${data.aws_caller_identity.current.account_id}:distribution/${aws_cloudfront_distribution.cloud_resume_distribution.id}"
@@ -163,6 +164,7 @@ resource "aws_wafv2_web_acl_association" "cloudfront_waf_association" {
   aws_wafv2_web_acl.cloudfront_waf
   ]
 }
+*/
 
 
 
