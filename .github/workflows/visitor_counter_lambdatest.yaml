@@ -25,4 +25,4 @@ jobs:
 
     - name: Run tests with pytest
       run: |
-        pytest tests/test_lambda.py  # Run the test script you provided
+        pytest tests/visitor_counter_testscript.py  # Run the test script you provided

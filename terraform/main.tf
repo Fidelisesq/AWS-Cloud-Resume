@@ -825,6 +825,7 @@ resource "aws_sns_topic_subscription" "sns_to_slack_subscription" {
 
 #AWS WAF resource to front Cloudfront
 resource "aws_wafv2_web_acl" "cloudfront_waf" {
+  depends_on = [aws_cloudfront_distribution.cloud_resume_distribution]
   name        = "cloudfront-waf"
   description = "WAF for CloudFront"
   scope       = "CLOUDFRONT"
@@ -930,6 +931,7 @@ resource "aws_wafv2_web_acl" "cloudfront_waf" {
     metric_name                = "CloudFrontWAF"
     sampled_requests_enabled   = true
   }
+
 }
 
 #Terraform Backend (S3 for State Management)
