@@ -68,9 +68,6 @@ jobs:
         id: validate
         run: cd terraform && terraform validate
 
-      - name: Refresh State to Sync
-        run: terraform refresh
-
       - name: Terraform Plan
         id: plan
         run: cd terraform && terraform plan -out=tfplan
