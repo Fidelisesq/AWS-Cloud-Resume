@@ -157,7 +157,8 @@ resource "aws_cloudfront_distribution" "cloud_resume_distribution" {
 # Associate WAF WebACL with CloudFront distribution
 resource "aws_wafv2_web_acl_association" "cloudfront_waf_association" {
   resource_arn = "arn:aws:cloudfront::${data.aws_caller_identity.current.account_id}:distribution/${aws_cloudfront_distribution.cloud_resume_distribution.id}"
-  web_acl_arn   = aws_wafv2_web_acl.cloudfront_waf.arn
+  # web_acl_arn   = aws_wafv2_web_acl.cloudfront_waf.arn
+  web_acl_id = aws_wafv2_web_acl.cloudfront_waf.arn
 
   depends_on = [
   aws_cloudfront_distribution.cloud_resume_distribution,
@@ -835,8 +836,10 @@ resource "aws_sns_topic_subscription" "sns_to_slack_subscription" {
   depends_on = [aws_lambda_permission.allow_sns] #Waits for Lambda perssion before subscription
 }
 
+
 #AWS WAF resource to front Cloudfront
 resource "aws_wafv2_web_acl" "cloudfront_waf" {
+  depends_on = [ aws_cloudfront_distribution.cloud_resume_distribution ]
   name        = "cloudfront-waf"
   description = "WAF for CloudFront"
   scope       = "CLOUDFRONT"
@@ -845,6 +848,7 @@ resource "aws_wafv2_web_acl" "cloudfront_waf" {
     allow {}
   }
 
+  # Rate limiting rule
   rule {
     name     = "RateLimitRule"
     priority = 1
@@ -855,7 +859,7 @@ resource "aws_wafv2_web_acl" "cloudfront_waf" {
 
     statement {
       rate_based_statement {
-        limit              = 2000
+        limit              = 2000 # Adjust based on your expected traffic
         aggregate_key_type = "IP"
       }
     }
@@ -867,12 +871,82 @@ resource "aws_wafv2_web_acl" "cloudfront_waf" {
     }
   }
 
+  # IP Reputation List Rule (AWS Managed Rule for IP Reputation)
+  rule {
+    name     = "IPReputationRule"
+    priority = 2
+
+    action {
+      block {}
+    }
+
+    statement {
+      managed_rule_group_statement {
+        vendor_name = "AWS"
+        name        = "AWSManagedRulesIPReputationList"
+      }
+    }
+
+    visibility_config {
+      cloudwatch_metrics_enabled = true
+      metric_name                = "IPReputationRule"
+      sampled_requests_enabled   = true
+    }
+  }
+
+  # SQL Injection Protection Rule (AWS Managed SQLi Rule)
+  rule {
+    name     = "SQLInjectionRule"
+    priority = 3
+
+    action {
+      block {}
+    }
+
+    statement {
+      managed_rule_group_statement {
+        vendor_name = "AWS"
+        name        = "AWSManagedRulesSQLiRuleSet"
+      }
+    }
+
+    visibility_config {
+      cloudwatch_metrics_enabled = true
+      metric_name                = "SQLInjectionRule"
+      sampled_requests_enabled   = true
+    }
+  }
+
+  # Cross-Site Scripting (XSS) Protection Rule (AWS Managed XSS Rule)
+  rule {
+    name     = "XSSProtectionRule"
+    priority = 4
+
+    action {
+      block {}
+    }
+
+    statement {
+      managed_rule_group_statement {
+        vendor_name = "AWS"
+        name        = "AWSManagedRulesXSSRuleSet"
+      }
+    }
+
+    visibility_config {
+      cloudwatch_metrics_enabled = true
+      metric_name                = "XSSProtectionRule"
+      sampled_requests_enabled   = true
+    }
+  }
+
   visibility_config {
     cloudwatch_metrics_enabled = true
     metric_name                = "CloudFrontWAF"
     sampled_requests_enabled   = true
   }
 }
+
 
 #Terraform Backend (S3 for State Management)
 terraform {
