@@ -10,6 +10,7 @@ terraform {
 }
 
 provider "aws" {
+  alias = "global"
   region = "us-east-1" # Set the deployment region
 }
 # Declare the caller identity data resource
@@ -107,6 +108,12 @@ resource "aws_cloudfront_origin_access_control" "cloud_resume_oac" {
   signing_behavior                  = "always"
   signing_protocol                  = "sigv4"
 }
+
+# Store WAF Web ACL ARN for CloudFront to ensure it is created before being referenced.
+locals {
+  cloudfront_waf_arn = aws_wafv2_web_acl.cloudfront_waf.arn
+}
+
 
 # CloudFront distribution
 resource "aws_cloudfront_distribution" "cloud_resume_distribution" {
@@ -839,7 +846,7 @@ resource "aws_sns_topic_subscription" "sns_to_slack_subscription" {
 
 #AWS WAF resource to front Cloudfront
 resource "aws_wafv2_web_acl" "cloudfront_waf" {
-  #depends_on = [ aws_cloudfront_distribution.cloud_resume_distribution ]
+  provider = aws.global
   name        = "cloudfront-waf"
   description = "WAF for CloudFront"
   scope       = "CLOUDFRONT"
