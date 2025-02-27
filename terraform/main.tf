@@ -876,6 +876,7 @@ resource "aws_wafv2_web_acl" "cloudfront_waf" {
     }
   }
 
+/*
   # IP Reputation List Rule (AWS Managed Rule for IP Reputation)
   rule {
     name     = "IPReputationRule"
@@ -922,7 +923,7 @@ resource "aws_wafv2_web_acl" "cloudfront_waf" {
     }
   }
 
-/*
+
   # Cross-Site Scripting (XSS) Protection Rule (AWS Managed Common Rule Set)
   rule {
     name     = "XSSProtectionRule"
