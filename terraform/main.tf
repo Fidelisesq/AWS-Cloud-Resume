@@ -11,6 +11,7 @@ terraform {
 
 provider "aws" {
   region = "us-east-1" # Set the deployment region
+  alias = "global"
 }
 # Declare the caller identity data resource
 data "aws_caller_identity" "current" {}
@@ -876,10 +877,9 @@ resource "aws_wafv2_web_acl" "cloudfront_waf" {
     }
   }
 
-/*
-  # IP Reputation List Rule (AWS Managed Rule for IP Reputation)
+  # Amazon IP Reputation List (AWS Managed Rule)
   rule {
-    name     = "IPReputationRule"
+    name     = "AmazonIpReputationRule"
     priority = 2
 
     action {
@@ -889,20 +889,21 @@ resource "aws_wafv2_web_acl" "cloudfront_waf" {
     statement {
       managed_rule_group_statement {
         vendor_name = "AWS"
-        name        = "AWSManagedRulesAmazonIpReputationList" # Ensure this rule group name is correct
+        name        = "AWSManagedRulesAmazonIpReputationList"
       }
     }
 
     visibility_config {
       cloudwatch_metrics_enabled = true
-      metric_name                = "IPReputationRule"
+      metric_name                = "AmazonIpReputationRule"
       sampled_requests_enabled   = true
     }
   }
 
-  # SQL Injection Protection Rule (AWS Managed SQLi Rule)
+
+  # Anonymous IP List Rule (Blocks VPNs, Proxies, etc.)
   rule {
-    name     = "SQLInjectionRule"
+    name     = "AnonymousIpRule"
     priority = 3
 
     action {
@@ -912,7 +913,30 @@ resource "aws_wafv2_web_acl" "cloudfront_waf" {
     statement {
       managed_rule_group_statement {
         vendor_name = "AWS"
-        name        = "AWSManagedRulesSQLiRuleSet" # Ensure this rule group name is correct
+        name        = "AWSManagedRulesAnonymousIpList"
+      }
+    }
+
+    visibility_config {
+      cloudwatch_metrics_enabled = true
+      metric_name                = "AnonymousIpRule"
+      sampled_requests_enabled   = true
+    }
+  }
+
+  # SQL Injection Protection Rule
+  rule {
+    name     = "SQLInjectionRule"
+    priority = 4
+
+    action {
+      block {}
+    }
+
+    statement {
+      managed_rule_group_statement {
+        vendor_name = "AWS"
+        name        = "AWSManagedRulesSQLiRuleSet"
       }
     }
 
@@ -923,11 +947,10 @@ resource "aws_wafv2_web_acl" "cloudfront_waf" {
     }
   }
 
-
-  # Cross-Site Scripting (XSS) Protection Rule (AWS Managed Common Rule Set)
+  # Common Rule Set (Covers OWASP vulnerabilities, XSS, etc.)
   rule {
-    name     = "XSSProtectionRule"
-    priority = 4
+    name     = "CommonRuleSet"
+    priority = 5
 
     action {
       block {}
@@ -936,19 +959,41 @@ resource "aws_wafv2_web_acl" "cloudfront_waf" {
     statement {
       managed_rule_group_statement {
         vendor_name = "AWS"
-        name        = "AWSManagedRulesCommonRuleSet" 
+        name        = "AWSManagedRulesCommonRuleSet"
       }
     }
 
     visibility_config {
       cloudwatch_metrics_enabled = true
-      metric_name                = "XSSProtectionRule"
+      metric_name                = "CommonRuleSet"
       sampled_requests_enabled   = true
     }
   }
-  */
 
-  # Visibility config at the root level
+  # Known Bad Inputs Protection Rule
+  rule {
+    name     = "KnownBadInputsRule"
+    priority = 6
+
+    action {
+      block {}
+    }
+
+    statement {
+      managed_rule_group_statement {
+        vendor_name = "AWS"
+        name        = "AWSManagedRulesKnownBadInputsRuleSet"
+      }
+    }
+
+    visibility_config {
+      cloudwatch_metrics_enabled = true
+      metric_name                = "KnownBadInputsRule"
+      sampled_requests_enabled   = true
+    }
+  }
+
+  # Visibility config for the WAF ACL itself
   visibility_config {
     cloudwatch_metrics_enabled = true
     metric_name                = "CloudFrontWAF"
