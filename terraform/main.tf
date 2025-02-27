@@ -10,7 +10,6 @@ terraform {
 }
 
 provider "aws" {
-  alias = "global"
   region = "us-east-1" # Set the deployment region
 }
 # Declare the caller identity data resource
@@ -846,7 +845,6 @@ resource "aws_sns_topic_subscription" "sns_to_slack_subscription" {
 
 #AWS WAF resource to front Cloudfront
 resource "aws_wafv2_web_acl" "cloudfront_waf" {
-  provider = aws.global
   name        = "cloudfront-waf"
   description = "WAF for CloudFront"
   scope       = "CLOUDFRONT"
