@@ -923,7 +923,7 @@ resource "aws_wafv2_web_acl" "cloudfront_waf" {
     }
   }
   
-/*
+
   # SQL Injection Protection Rule
   rule {
     name     = "SQLInjectionRule"
@@ -946,8 +946,8 @@ resource "aws_wafv2_web_acl" "cloudfront_waf" {
       sampled_requests_enabled   = true
     }
   }
-*/
-  # Common Rule Set (Covers OWASP vulnerabilities, XSS, etc.)
+/*
+# Common Rule Set (Covers OWASP vulnerabilities, XSS, etc.)
   rule {
     name     = "CommonRuleSet"
     priority = 5
@@ -969,6 +969,7 @@ resource "aws_wafv2_web_acl" "cloudfront_waf" {
       sampled_requests_enabled   = true
     }
   }
+  */
 
   # Known Bad Inputs Protection Rule
   rule {
