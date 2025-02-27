@@ -875,7 +875,7 @@ resource "aws_wafv2_web_acl" "cloudfront_waf" {
       sampled_requests_enabled   = true
     }
   }
-/*
+
   # Amazon IP Reputation List (AWS Managed Rule)
   rule {
     name     = "AmazonIpReputationRule"
@@ -899,7 +899,7 @@ resource "aws_wafv2_web_acl" "cloudfront_waf" {
     }
   }
 
-*/
+/*
   # Anonymous IP List Rule (Blocks VPNs, Proxies, etc.)
   rule {
     name     = "AnonymousIpRule"
@@ -922,6 +922,7 @@ resource "aws_wafv2_web_acl" "cloudfront_waf" {
       sampled_requests_enabled   = true
     }
   }
+  */
 
   # SQL Injection Protection Rule
   rule {
