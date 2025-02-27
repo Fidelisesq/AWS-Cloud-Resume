@@ -899,7 +899,7 @@ resource "aws_wafv2_web_acl" "cloudfront_waf" {
     }
   }
 
-/*
+
   # Anonymous IP List Rule (Blocks VPNs, Proxies, etc.)
   rule {
     name     = "AnonymousIpRule"
@@ -922,8 +922,8 @@ resource "aws_wafv2_web_acl" "cloudfront_waf" {
       sampled_requests_enabled   = true
     }
   }
-  */
-
+  
+/*
   # SQL Injection Protection Rule
   rule {
     name     = "SQLInjectionRule"
@@ -946,7 +946,7 @@ resource "aws_wafv2_web_acl" "cloudfront_waf" {
       sampled_requests_enabled   = true
     }
   }
-
+*/
   # Common Rule Set (Covers OWASP vulnerabilities, XSS, etc.)
   rule {
     name     = "CommonRuleSet"
