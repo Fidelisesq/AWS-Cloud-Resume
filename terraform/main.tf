@@ -920,76 +920,8 @@ resource "aws_wafv2_web_acl" "cloudfront_waf" {
       sampled_requests_enabled   = true
     }
   }
-/*
-  # Anonymous IP List (Blocks VPNs, proxies, Tor nodes)
-  rule {
-    name     = "AnonymousIPRule"
-    priority = 3
 
-    override_action { 
-      count {} 
-    }
-
-    statement {
-      managed_rule_group_statement {
-        vendor_name = "AWS"
-        name        = "AnonymousIPList"
-      }
-    }
-
-    visibility_config {
-      cloudwatch_metrics_enabled = true
-      metric_name                = "AnonymousIPRule"
-      sampled_requests_enabled   = true
-    }
-  }
-
-  # SQL Injection Protection Rule
-  rule {
-    name     = "SQLInjectionRule"
-    priority = 4
-
-    override_action { 
-      count {} 
-    }
-
-    statement {
-      managed_rule_group_statement {
-        vendor_name = "AWS"
-        name        = "AWSManagedRulesSQLiRuleSet"
-      }
-    }
-
-    visibility_config {
-      cloudwatch_metrics_enabled = true
-      metric_name                = "SQLInjectionRule"
-      sampled_requests_enabled   = true
-    }
-  }
-
-  # Common Web Protection Rules (Covers OWASP vulnerabilities, XSS, etc.)
-  rule {
-    name     = "CommonRuleSet"
-    priority = 5
-
-    override_action { 
-      count {} 
-    }
-
-    statement {
-      managed_rule_group_statement {
-        vendor_name = "AWS"
-        name        = "AWSManagedRulesCommonRuleSet"
-      }
-    }
-
-    visibility_config {
-      cloudwatch_metrics_enabled = true
-      metric_name                = "CommonRuleSet"
-      sampled_requests_enabled   = true
-    }
-  }
-*/
+  
   # Visibility config for the WAF ACL itself
   visibility_config {
     cloudwatch_metrics_enabled = true
