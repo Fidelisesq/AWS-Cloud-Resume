@@ -864,7 +864,7 @@ resource "aws_wafv2_web_acl" "cloudfront_waf" {
 
     statement {
       rate_based_statement {
-        limit              = 2000 # Adjust based on your expected traffic
+        limit              = 2000
         aggregate_key_type = "IP"
       }
     }
@@ -876,50 +876,71 @@ resource "aws_wafv2_web_acl" "cloudfront_waf" {
     }
   }
 
-  # Amazon IP Reputation List (AWS Managed Rule)
+  # Amazon IP Reputation List (Blocks known bad IPs, reconnaissance, DDoS)
   rule {
-    name     = "AmazonIpReputationRule"
+    name     = "AmazonIPReputationRule"
     priority = 2
 
-    action {
-      block {}
+    override_action { 
+      count {} 
     }
 
     statement {
       managed_rule_group_statement {
         vendor_name = "AWS"
         name        = "AWSManagedRulesAmazonIpReputationList"
-        version     = "1.0" # Add the version parameter
+
+        # OPTIONAL: Override specific rules inside the group
+        rule_action_override {
+          action_to_use {
+            block {}
+          }
+          name = "AWSManagedIPReputationList"
+        }
+
+        rule_action_override {
+          action_to_use {
+            block {}
+          }
+          name = "AWSManagedReconnaissanceList"
+        }
+
+        rule_action_override {
+          action_to_use {
+            count {}
+          }
+          name = "AWSManagedIPDDoSList"
+        }
       }
     }
 
     visibility_config {
       cloudwatch_metrics_enabled = true
-      metric_name                = "AmazonIpReputationRule"
+      metric_name                = "AmazonIPReputationRule"
       sampled_requests_enabled   = true
     }
   }
 
-  # Anonymous IP List Rule (Blocks VPNs, Proxies, etc.)
+/*
+  # Anonymous IP List (Blocks VPNs, proxies, Tor nodes)
   rule {
-    name     = "AnonymousIpRule"
+    name     = "AnonymousIPRule"
     priority = 3
 
-    action {
-      block {}
+    override_action { 
+      count {} 
     }
 
     statement {
       managed_rule_group_statement {
         vendor_name = "AWS"
-        name        = "AWSManagedRulesAnonymousIpList"
-        version     = "1.0" # Add the version parameter
+        name        = "AnonymousIPList"
       }
     }
 
     visibility_config {
       cloudwatch_metrics_enabled = true
-      metric_name                = "AnonymousIpRule"
+      metric_name                = "AnonymousIPRule"
       sampled_requests_enabled   = true
     }
   }
@@ -929,15 +950,14 @@ resource "aws_wafv2_web_acl" "cloudfront_waf" {
     name     = "SQLInjectionRule"
     priority = 4
 
-    action {
-      block {}
+    override_action { 
+      count {} 
     }
 
     statement {
       managed_rule_group_statement {
         vendor_name = "AWS"
         name        = "AWSManagedRulesSQLiRuleSet"
-        version     = "1.0" # Add the version parameter
       }
     }
 
@@ -948,20 +968,19 @@ resource "aws_wafv2_web_acl" "cloudfront_waf" {
     }
   }
 
-  # Common Rule Set (Covers OWASP vulnerabilities, XSS, etc.)
+  # Common Web Protection Rules (Covers OWASP vulnerabilities, XSS, etc.)
   rule {
     name     = "CommonRuleSet"
     priority = 5
 
-    action {
-      block {}
+    override_action { 
+      count {} 
     }
 
     statement {
       managed_rule_group_statement {
         vendor_name = "AWS"
         name        = "AWSManagedRulesCommonRuleSet"
-        version     = "1.0" # Add the version parameter
       }
     }
 
@@ -971,31 +990,7 @@ resource "aws_wafv2_web_acl" "cloudfront_waf" {
       sampled_requests_enabled   = true
     }
   }
-
-  # Known Bad Inputs Protection Rule
-  rule {
-    name     = "KnownBadInputsRule"
-    priority = 6
-
-    action {
-      block {}
-    }
-
-    statement {
-      managed_rule_group_statement {
-        vendor_name = "AWS"
-        name        = "AWSManagedRulesKnownBadInputsRuleSet"
-        version     = "1.0" # Add the version parameter
-      }
-    }
-
-    visibility_config {
-      cloudwatch_metrics_enabled = true
-      metric_name                = "KnownBadInputsRule"
-      sampled_requests_enabled   = true
-    }
-  }
-
+*/
   # Visibility config for the WAF ACL itself
   visibility_config {
     cloudwatch_metrics_enabled = true
@@ -1003,6 +998,7 @@ resource "aws_wafv2_web_acl" "cloudfront_waf" {
     sampled_requests_enabled   = true
   }
 }
+
 
 #Terraform Backend (S3 for State Management)
 terraform {
