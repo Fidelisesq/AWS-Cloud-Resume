@@ -19,7 +19,7 @@ The goal of this project was to enhance the accessibility and visibility of my r
    III. **Backend**: A serverless REST API built with **AWS Lambda** and **API Gateway** to handle dynamic functionality & DynamoDB to store visitor count. 
 
    IV. **Monitoring and Alerts**: **CloudWatch**, **SNS**, **PagerDuty**, and **Slack** for monitoring and notifications.  
-   
+
    V. **Security & DNS**: **AWS WAF, Route53 & DNSSEC** WAF to protect the website from common web exploits while Route53 for DNS management and DNSSEC for enhanced domain security. 
    
 
@@ -1085,8 +1085,9 @@ resource "aws_route53_hosted_zone_dnssec" "dnssec" {
 }
 ```
 `DNSSEC Activated`
-| ![DNNSEC Active-1](https://github.com/Fidelisesq/AWS-Cloud-Resume/blob/main/Images%2BVideos/DNSSEC%20Active-1.png) | ![DNSSEC Active-2](https://github.com/Fidelisesq/AWS-Cloud-Resume/blob/main/Images%2BVideos/DNSSEC%20Active-2.png) |
-|---|---|
+![DNNSEC Active-1](https://github.com/Fidelisesq/AWS-Cloud-Resume/blob/main/Images%2BVideos/DNSSEC%20Active-1.png) 
+
+ ![DNSSEC Active-2](https://github.com/Fidelisesq/AWS-Cloud-Resume/blob/main/Images%2BVideos/DNSSEC%20Active-2.png)
 
 #### **Challenges & Strategies**
 Not really a challenge here but I got to discover that AWS WAF won't work with the HTTP API. So, I opted for the REST API with WAF to protect it. Later on, I placed WAF before my Cloudfront and introduced throttling to my REST API. When WAF worked, using `AWSManagedRules` gave me issues. So, I checked the documentation for each rule and discovered the issue was me overriding some rules in my terraform config when the default actions was already set by AWS either as `count` or `block`. Secondly, I initially created a KMS key needed for my DNSSEC without an active policy that grants me necessary permission like `PutKeyPolicy` & `Disable + DeleteKey` so it locked me out when I needed to modify `Sign` & `Verify` permission for `Route53`. I had to contact `AWS` support for help because I can't modify it nor schedule for deletion. 
