@@ -942,6 +942,58 @@ resource "aws_wafv2_web_acl" "cloudfront_waf" {
     }
   }
   
+  # AWS Managed Common Rule Set
+rule {
+  name     = "CommonRuleSet"
+  priority = 4
+
+  override_action {
+    none {}  # Ensures AWS WAF applies its built-in block actions
+  }
+
+  statement {
+    managed_rule_group_statement {
+      vendor_name = "AWS"
+      name        = "AWSManagedRulesCommonRuleSet"
+
+      # Override specific rules that are set to "Count" by default, so they actually block bad traffic.
+      rule_action_override {
+        action_to_use {
+          block {}
+        }
+        name = "CrossSiteScripting_URIPATH_RC_COUNT"
+      }
+
+      rule_action_override {
+        action_to_use {
+          block {}
+        }
+        name = "CrossSiteScripting_BODY_RC_COUNT"
+      }
+
+      rule_action_override {
+        action_to_use {
+          block {}
+        }
+        name = "CrossSiteScripting_QUERYARGUMENTS_RC_COUNT"
+      }
+
+      rule_action_override {
+        action_to_use {
+          block {}
+        }
+        name = "CrossSiteScripting_COOKIE_RC_COUNT"
+      }
+    }
+  }
+
+  visibility_config {
+    cloudwatch_metrics_enabled = true
+    metric_name                = "CommonRuleSet"
+    sampled_requests_enabled   = true
+  }
+}
+
   # Visibility config for the WAF ACL itself
   visibility_config {
     cloudwatch_metrics_enabled = true
