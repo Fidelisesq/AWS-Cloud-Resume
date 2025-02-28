@@ -925,10 +925,6 @@ resource "aws_wafv2_web_acl" "cloudfront_waf" {
     name     = "KnownBadInputsRule"
     priority = 3
 
-    override_action { 
-      block {} 
-    }
-
     statement {
       managed_rule_group_statement {
         vendor_name = "AWS"
