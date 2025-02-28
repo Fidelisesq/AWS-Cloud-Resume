@@ -10,12 +10,14 @@ Building a serverless resume website on AWS isn’t just about hosting a static 
 The goal of this project was to enhance the accessibility and visibility of my resume by hosting it as a responsive website. The website is built using serverless technologies, ensuring minimal operational overhead and maximum scalability. Here’s a high-level breakdown of the architecture:
 
 1. **Terraform Configuration**  
-   I. **Frontend**: A static HTML resume hosted on **Amazon S3** and served via **CloudFront** for global content delivery.  
-   II. **Backend**: A serverless REST API built with **AWS Lambda** and **API Gateway** to handle dynamic functionality & DynamoDB to store visitor count.  
-   III. **Monitoring and Alerts**: **CloudWatch**, **SNS**, **PagerDuty**, and **Slack** for monitoring and notifications.  
-   IV. **Security & DNS**: **AWS WAF, Route53 & DNSSEC** WAF to protect the website from common web exploits while Route53 for DNS management and DNSSEC for enhanced domain security.  
+   I. **Provider, Identity Configuration + Terraform State Management**: Terraform version specified while **AWS S3** stores Terraform state. 
+   II. **Frontend**: A static HTML resume hosted on **Amazon S3** and served via **CloudFront** for global content delivery. 
+   III. **Backend**: A serverless REST API built with **AWS Lambda** and **API Gateway** to handle dynamic functionality & DynamoDB to store visitor count.  
+   IV. **Monitoring and Alerts**: **CloudWatch**, **SNS**, **PagerDuty**, and **Slack** for monitoring and notifications.  
+   V. **Security & DNS**: **AWS WAF, Route53 & DNSSEC** WAF to protect the website from common web exploits while Route53 for DNS management and DNSSEC for enhanced domain security. 
+   VI. **Terraform State Management**: S3 is used for centralised storage ensurng a reliable state management. 
 
-2. **CI/CD**: Automated deployment pipeline using **GitHub Actions**.  
+2. **Code Test+ CI/CD**: Automated deployment pipeline using **GitHub Actions**.  
 3. **End-to-End Test**: Automated test of site functionality and app backend using Cypress.  
 4. **Results**: The resume website is globally available, secure, and scalable. The visitor count updates dynamically via the backend, and CloudWatch monitors API health. CI/CD ensures quick updates with automated testing, improving reliability.  
 5. **Conclusion**: Summary of the project and lessons learnt. 
@@ -25,9 +27,40 @@ The goal of this project was to enhance the accessibility and visibility of my r
 
 The entire infrastructure is defined using Terraform (Infrastructure as Code), ensuring reproducibility and scalability. Below is a detailed explanation of the Terraform configuration. `Note:` You can find all configuration files in my [Github.](https://github.com/Fidelisesq/AWS-Cloud-Resume)
 
----
 
-### **I. Frontend: S3 & CloudFront**
+### **I. Provider, Identity Configuration + Terraform State Management**
+
+The configuration uses **Amazon S3** for centralized state management, storing the `infrastructure.tfstate` file in the `foz-terraform-state-bucket` with encryption enabled. The **AWS provider** (version `>= 5.8.0`) is configured for deployment in the `us-east-1` region, and the Terraform version is set to `>= 1.10.3`. Additionally, the `aws_caller_identity` data resource retrieves information about the currently authenticated AWS account. This setup ensures secure, reliable state management and deployment configuration.
+
+```hcl
+terraform {
+  required_providers {
+    aws = {
+      source  = "hashicorp/aws"
+      version = ">= 5.8.0"
+    }
+  }
+  required_version = ">= 1.10.3"
+}
+
+provider "aws" {
+  region = "us-east-1" # Set the deployment region
+}
+# Declare the caller identity data resource
+data "aws_caller_identity" "current" {}
+
+#Terraform Backend (S3 for State Management)
+terraform {
+  backend "s3" {
+    bucket  = "foz-terraform-state-bucket"
+    key     = "infrastructure.tfstate"
+    region  = "us-east-1"
+    encrypt = true
+  }
+}
+```
+
+### **II. Frontend: S3 & CloudFront**
 
 The frontend consists of a static HTML file hosted on an S3 bucket and served via CloudFront. The bucket is configured with versioning, CORS, and a policy to allow access only via CloudFront. Terraform uses `template_file` to replace  the API-Gateway invocation URL place holder in the script on my html document with the real URL once API-Gateway is created & deployed. Once that is done, terraform copies the html to the s3 bucket.
 
@@ -173,19 +206,14 @@ resource "aws_cloudfront_distribution" "cloud_resume_distribution" {
 }
 ```
 
-- **S3 Bucket**: Stores the static HTML file for the resume.
-- **Versioning**: Enabled to keep track of changes.
-- **CORS**: Allows cross-origin requests from the custom domain, which I specied in the S3 CORS policy.
-- **Bucket Policy**: Restricts access to the bucket, allowing only CloudFront to serve the content.
-
 #### **Challenges & Strategies**
 CORS setting was my major challenge here as browswers were blocking requests to S3 bucket due to incorrect CORS headers. I checked AWS documentation & used browser developers tools to debug and setup cache invalidation as Cloudfront was still serving old contents even though my CORS is now updated. For HTTPS & custom domain, I followed AWS best practices to set up ACM and Route 53, ensuring a secure and reliable custom domain setup.
 
----
 
-### **II. Backend: Lambda, DynamoDB, and API Gateway**
 
-The backend consists of a Lambda function to handle visitor counts, a DynamoDB table to store the counts, and an API Gateway to expose the Lambda function as a REST API.
+### **III. Backend: Lambda, DynamoDB, and API Gateway**
+
+The **Lambda function** handles the logic for retrieving and incrementing the visitor count, with **environment variables** passing the DynamoDB table name. The **DynamoDB table** stores the visitor count using a primary key `id`, while **API Gateway** exposes my Visitor_Counter Lambda function as a REST API, integrating it seamlessly for dynamic functionality.
 
 #### **Lambda Function for Visitor Count**
 
@@ -431,22 +459,16 @@ resource "aws_iam_policy_attachment" "api_gw_logging_policy" {
 resource "aws_api_gateway_account" "api_logging" {
   cloudwatch_role_arn = aws_iam_role.api_gw_cloudwatch_role.arn
 }
-
 ```
-- **Lambda Function**: Handles the logic for retrieving & incrementing and visitor counts.
-- **Environment Variables**: Passes the DynamoDB table name to the Lambda function.
-- **DynamoDB Table**: Stores the visitor count with a primary key `id`.
-- **API Gateway**: Exposes the Lambda function as a REST API.
-- **Integration**: Connects the API Gateway to the Lambda function.
 
 #### **Challenges & Strategies**
-I spent time here writing the Lambda Function code that checks DynamoDB table, retreive the count and updates it. My function needed a paramenter to recognise a unique visitor I tried `Browser LocalStorage` but it increment count on reload by thesame user. I also tried `Session` and `Cookie` until I settled for IP address. My function stores the hash of unique IP in my DynamoDB table to check unique visitors. `The hash is a One-Way process, so I can't recover the IPs from it.` I ran Postman to test my API-Gateway and fixed permission issues not allowing API-Gatway to invoke my Lambda.
+I spent time here writing the Lambda Function code that checks DynamoDB table, retreive the count and updates it. My function needed a paramenter to recognise a unique visitor. I tried `Browser LocalStorage` but it increments count when I refresh the page on thesame browser. I also tried `Session` and `Cookie` until I settled for IP address. My function stores the hash of unique IPs in my DynamoDB table to check unique visitors. `The hash is a One-Way process, so I can't see the IPs and I can't recover them from the hashes.` I ran Postman to test my API-Gateway and fixed permission issues not allowing API-Gatway to invoke my Lambda.
 
 ---
 
-### **III. Monitoring and Alerts**
+### **IV. Monitoring and Alerts**
 
-The project includes monitoring and alerting using CloudWatch, SNS, PagerDuty, and Slack.
+In this section of the project, I set up comprehensive monitoring and alerting using AWS CloudWatch, SNS, PagerDuty, and Slack to ensure timely responses to issues. I created a CloudWatch alarm to monitor API Gateway errors, triggering notifications through SNS when certain thresholds are met. I also configured an SNS topic to handle notifications and a policy to restrict publishing to CloudWatch only. For incident management, I integrated PagerDuty to alert on critical issues and used AWS Lambda to forward messages to PagerDuty. Additionally, I set up Slack integration to notify the team in real-time via a Lambda function that listens to the SNS topic, ensuring the team is always in the loop.
 
 #### **CloudWatch Alarms**
 
@@ -812,19 +834,16 @@ resource "aws_sns_topic_subscription" "sns_to_slack_subscription" {
 `Slack Alert from SNS-Lambda`
 
 ![Slack-alert](https://github.com/Fidelisesq/AWS-Cloud-Resume/blob/main/Images%2BVideos/Slack%20Notification-1.png)
-- **CloudWatch Alarms**: Monitors API Gateway and Lambda for errors and latency.
-- **SNS Topic**: Centralised notification system for alerts. My slack & Email & PagerDuty were subscribed to my SNS.
-- **PagerDuty Integration**: Sends alerts to PagerDuty for critical issues.
-- **Slack Integration**: Sends notifications to a Slack channel for non-critical alerts.
+
 
 #### **Challenges & Strategies**
 While SNS allowed HTTPS subscription for PagerDuty integration, it can't retrieve my integration URL from AWS Secret Manager and it can't natively forward messages to Slack App. So, I employed two Lamba functions, which subsribed to SNS and forwared alerts generated by CloudWatch to my Slack App & PagerDuty for phone notifications.
 
 ---
 
-### **IV. Security & DNS: AWS WAF, Route53 & DNSSEC**
+### **V. Security & DNS: AWS WAF, Route53 & DNSSEC**
 
-The website is protected by AWS WAF to prevent common web exploits while activating DNSSEC for my domain enhances security by preventing attackers from tampering with DNS responses and ensuring the integrity and authenticity of the domain's DNS data.
+The WAF configuration protects the website by blocking excessive traffic from a single IP (rate limiting), known bad IPs associated with reconnaissance and DDoS attacks, and malicious inputs. It also applies AWS-managed rule sets to prevent common vulnerabilities like cross-site scripting (XSS) and SQL injection, while providing visibility through CloudWatch metrics. Activating DNSSEC for my domain enhances security by preventing attackers from tampering with DNS responses and ensuring the integrity and authenticity of the domain's DNS data while Route53 provides the custom domain.
 
 #### **WAF Integration with Cloudfront**
 ```hcl
@@ -838,6 +857,7 @@ resource "aws_wafv2_web_acl" "cloudfront_waf" {
     allow {}
   }
 
+  # Rate limiting rule
   rule {
     name     = "RateLimitRule"
     priority = 1
@@ -848,7 +868,7 @@ resource "aws_wafv2_web_acl" "cloudfront_waf" {
 
     statement {
       rate_based_statement {
-        limit              = 2000 # Adjust based on your expected traffic
+        limit              = 2000
         aggregate_key_type = "IP"
       }
     }
@@ -858,6 +878,132 @@ resource "aws_wafv2_web_acl" "cloudfront_waf" {
       metric_name                = "RateLimitRule"
       sampled_requests_enabled   = true
     }
+  }
+
+  # Amazon IP Reputation List (Blocks known bad IPs, reconnaissance, DDoS)
+  rule {
+    name     = "AmazonIPReputationRule"
+    priority = 2
+
+    override_action { 
+      count {} 
+    }
+
+    statement {
+      managed_rule_group_statement {
+        vendor_name = "AWS"
+        name        = "AWSManagedRulesAmazonIpReputationList"
+
+        # OPTIONAL: Override specific rules inside the group
+        rule_action_override {
+          action_to_use {
+            block {}
+          }
+          name = "AWSManagedIPReputationList"
+        }
+
+        rule_action_override {
+          action_to_use {
+            block {}
+          }
+          name = "AWSManagedReconnaissanceList"
+        }
+
+        rule_action_override {
+          action_to_use {
+            count {}
+          }
+          name = "AWSManagedIPDDoSList"
+        }
+      }
+    }
+
+    visibility_config {
+      cloudwatch_metrics_enabled = true
+      metric_name                = "AmazonIPReputationRule"
+      sampled_requests_enabled   = true
+    }
+  }
+
+  # AWS Managed Known Bad Inputs Rule Set
+  rule {
+    name     = "KnownBadInputsRule"
+    priority = 3
+
+    override_action {
+      none {}
+    }
+
+    statement {
+      managed_rule_group_statement {
+        vendor_name = "AWS"
+        name        = "AWSManagedRulesKnownBadInputsRuleSet"
+      }
+    }
+    visibility_config {
+      cloudwatch_metrics_enabled = true
+      metric_name                = "KnownBadInputsRule"
+      sampled_requests_enabled   = true
+    }
+  }
+  
+  # AWS Managed Common Rule Set
+rule {
+  name     = "CommonRuleSet"
+  priority = 4
+
+  override_action {
+    none {}  # Ensures AWS WAF applies its built-in block actions
+  }
+
+  statement {
+    managed_rule_group_statement {
+      vendor_name = "AWS"
+      name        = "AWSManagedRulesCommonRuleSet"
+
+      # Override specific rules that are set to "Count" by default, so they actually block bad traffic.
+      rule_action_override {
+        action_to_use {
+          block {}
+        }
+        name = "CrossSiteScripting_URIPATH_RC_COUNT"
+      }
+
+      rule_action_override {
+        action_to_use {
+          block {}
+        }
+        name = "CrossSiteScripting_BODY_RC_COUNT"
+      }
+
+      rule_action_override {
+        action_to_use {
+          block {}
+        }
+        name = "CrossSiteScripting_QUERYARGUMENTS_RC_COUNT"
+      }
+
+      rule_action_override {
+        action_to_use {
+          block {}
+        }
+        name = "CrossSiteScripting_COOKIE_RC_COUNT"
+      }
+    }
+  }
+
+  visibility_config {
+    cloudwatch_metrics_enabled = true
+    metric_name                = "CommonRuleSet"
+    sampled_requests_enabled   = true
+  }
+}
+
+  # Visibility config for the WAF ACL itself
+  visibility_config {
+    cloudwatch_metrics_enabled = true
+    metric_name                = "CloudFrontWAF"
+    sampled_requests_enabled   = true
   }
 }
 ```
@@ -932,18 +1078,14 @@ resource "aws_route53_hosted_zone_dnssec" "dnssec" {
 }
 ```
 
-- **AWS WAF**: Protects the website from DDoS attacks and other web exploits.
-- **Route53**: Helps with my custom domain.
-- **DNSSEC**: Enhances domain security.
-
 #### **Challenges & Strategies**
 Not really a challenge here but I got to discover that AWS WAF won't work with the HTTP API. So, I opted for the REST API with WAF to protect it. Later on, I placed WAF before my Cloudfront and introduced throttling to my REST API. Secondly, I initially created a KMS key needed for my DNSSEC without an active policy that grants me necessary permission like `PutKeyPolicy` & `Disable + DeleteKey` so it locked me out when I needed to modify `Sign` & `Verify` permission for `Route53`. I had to contact `AWS` support for help because I can't modify it nor schedule for deletion. 
 
 ---
 
-## **2. CI/CD Pipeline**
+## **2. Code Test + CI/CD Pipeline**
 
-The infrastructure is deployed using a CI/CD pipeline powered by GitHub Actions. The Terraform state is stored in an S3 bucket for state management.
+In this workflow, I set up a GitHub Actions pipeline to deploy and manage infrastructure using Terraform. The pipeline includes steps for testing the Lambda function that counts visitors on the website and ensures the tests are successful before proceeding with the infrastructure deployment. I also added functionality for both creating and destroying resources based on user input or commit messages. For deployment, I configured Terraform to provision the necessary resources on AWS, including creating and applying a Terraform plan with secrets securely stored in GitHub. Additionally, I implemented a cleanup process that destroys infrastructure when required, ensuring efficient resource management.
 
 #### **GitHub Actions Workflow**
 
@@ -967,12 +1109,44 @@ on:
           - destroy
 
 jobs:
+  visitor-count-lambda-function-test:
+    name: "Visitor Count Lambda Function Test"
+    runs-on: ubuntu-latest
+    if: >-
+      !(github.event_name == 'workflow_dispatch' && github.event.inputs.action == 'destroy') &&
+      !(github.event_name == 'push' && contains(github.event.head_commit.message, 'destroy'))
+    steps:
+      - name: Checkout the code
+        uses: actions/checkout@v4.2.2
+
+      - name: Set up Python
+        uses: actions/setup-python@v5.4.0
+        with:
+          python-version: '3.8'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements-test.txt
+
+      - name: Set up AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4.1.0
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-1
+
+      - name: Run tests with pytest
+        run: |
+          pytest tests/visitor_counter_testscript.py
+
   infrastructure-deployment:
     if: >-
-      (github.event_name == 'push' && !contains(github.event.head_commit.message, 'destroy')) ||
-      (github.event_name == 'workflow_dispatch' && github.event.inputs.action == 'create')
+      (github.event_name == 'push' && !contains(github.event.head_commit.message, 'destroy') && needs.visitor-count-lambda-function-test.result == 'success') ||
+      (github.event_name == 'workflow_dispatch' && github.event.inputs.action == 'create' && needs.visitor-count-lambda-function-test.result == 'success')
     name: "Infrastructure Deployment"
     runs-on: ubuntu-latest
+    needs: visitor-count-lambda-function-test
     defaults:
       run:
         shell: bash
@@ -1078,12 +1252,6 @@ jobs:
         run: cd terraform && terraform destroy -auto-approve
 ```
 
-- **Workflow Triggers**: The workflow is triggered on a push to the `main` branch or manually via the `workflow_dispatch` event.
-- **Terraform Steps**: The workflow initializes, validates, plans, and applies the Terraform configuration for deployment. For cleanup, it destroys the infrastructure.
-- **Secrets Management**: Sensitive values like AWS credentials, ACM certificate ARN, and Slack webhook URL are stored in GitHub Secrets.
-
-#### **Challenges & Strategies**
-
 `Screenshot of successful End-to-End Design Test`
 
 ![Cypress end-to-end-test](https://github.com/Fidelisesq/AWS-Cloud-Resume/blob/main/Images%2BVideos/Cypress-Test-2.png)
@@ -1091,6 +1259,10 @@ jobs:
 
 | ![Image 1](https://github.com/Fidelisesq/AWS-Cloud-Resume/blob/main/Images%2BVideos/Cypress-Test-33.png) | ![Image 2](https://github.com/Fidelisesq/AWS-Cloud-Resume/blob/main/Images%2BVideos/Cypress-Test-11.png) |
 |---|---|
+
+#### **Challenges & Strategies**
+When I started I had partial success of deplpyment here and there. I actually lost count of the number of `Workflow Runs` before I got a clean successfull run. I 
+
 
 ---
 
