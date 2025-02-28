@@ -1262,6 +1262,11 @@ jobs:
         id: destroy
         run: cd terraform && terraform destroy -auto-approve
 ```
+`Successful Deployment Workflow Run`
+![Workflow-run](https://github.com/Fidelisesq/AWS-Cloud-Resume/blob/main/Images%2BVideos/Deployment_workflow.png)
+
+#### **Challenges & Strategies**
+When I started I had partial success of deployment here and there. I actually lost count of the number of `Workflow Runs` before I got a clean successful run. This section came with lots of debugging, learning to use `event`status and conditions to achieve my goal.
 
 ---
 
@@ -1328,9 +1333,6 @@ jobs:
 
 | ![Image 1](https://github.com/Fidelisesq/AWS-Cloud-Resume/blob/main/Images%2BVideos/Cypress-Test-33.png) | ![Image 2](https://github.com/Fidelisesq/AWS-Cloud-Resume/blob/main/Images%2BVideos/Cypress-Test-11.png) |
 |---|---|
-
-#### **Challenges & Strategies**
-When I started I had partial success of deployment here and there. I actually lost count of the number of `Workflow Runs` before I got a clean successful run. This section came with lots of debugging, learning to use `event`status and conditions to achieve my goal.
 
 #### **Challenges & Strategies**
 
