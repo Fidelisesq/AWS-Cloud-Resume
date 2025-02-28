@@ -2,7 +2,9 @@
 
 # **Hosting a Serverless Resume Website on AWS with Terraform and CI/CD**
 
-Building a serverless resume website on AWS isn’t just about hosting a static page. It is like assembling a high-performance engine. When I decided to create my resume website, I wanted it to be more than just a digital placeholder—it had to be scalable, secure, and cost-efficient. Each component—S3, CloudFront, Lambda, DynamoDB, API Gateway, Route53+DNSSEC to Monitoring tools and AWS WAF—plays a critical role, while Terraform and GitHub CI/CD act as the control systems, ensuring everything runs smoothly. The result? A scalable, secure, and cost-efficient website. Let’s take a closer look under the hood!
+Building a serverless resume website on AWS isn’t just about hosting a static page. It is like assembling a high-performance engine. When I decided to create my resume website, I wanted it to be more than just a digital placeholder—it had to be scalable, secure, and cost-efficient. 
+
+Each component—S3, CloudFront, Lambda, DynamoDB, API Gateway, Route53+DNSSEC to Monitoring tools and AWS WAF—plays a critical role, while Terraform and GitHub CI/CD act as the control systems, ensuring everything runs smoothly. Along the way, I encountered several `challenges` at different stages, from infrastructure setup to automation, and documented my `approach` to resolving them. The result? A scalable, secure, and cost-efficient website. Let’s take a closer look under the hood!
 
 ---
 
@@ -59,6 +61,7 @@ terraform {
   }
 }
 ```
+---
 
 ### **II. Frontend: S3 & CloudFront**
 
@@ -209,7 +212,7 @@ resource "aws_cloudfront_distribution" "cloud_resume_distribution" {
 #### **Challenges & Strategies**
 CORS setting was my major challenge here as browswers were blocking requests to S3 bucket due to incorrect CORS headers. I checked AWS documentation & used browser developers tools to debug and setup cache invalidation as Cloudfront was still serving old contents even though my CORS is now updated. For HTTPS & custom domain, I followed AWS best practices to set up ACM and Route 53, ensuring a secure and reliable custom domain setup.
 
-
+---
 
 ### **III. Backend: Lambda, DynamoDB, and API Gateway**
 
@@ -1261,27 +1264,17 @@ jobs:
 |---|---|
 
 #### **Challenges & Strategies**
-When I started I had partial success of deplpyment here and there. I actually lost count of the number of `Workflow Runs` before I got a clean successfull run. I 
-
+When I started I had partial success of deplpyment here and there. I actually lost count of the number of `Workflow Runs` before I got a clean successfull run. This section came with lots of debugging, learning to use `event`status and conditions to achieve my goal.
 
 ---
 
 ## **3. End-to-End Test with Cypress**
 
-To ensure the website functions as expected after deployment, I implemented automated end-to-end (E2E) tests using **Cypress**. These tests are triggered automatically after a successful infrastructure deployment, ensuring that the website is not only deployed but also fully functional.
+In this Cypress workflow, I run tests on the deployed resume website to ensure its functionality after the infrastructure is successfully deployed. The workflow triggers once the `Deploy Infrastructure` workflow completes, confirming the deployment was successful before starting the Cypress tests. 
+
+The tests check various elements on the page, such as verifying that my name appears, confirming the presence of key sections like "Professional Summary" and "Personal Project Experience," and ensuring links to my GitHub, LinkedIn, and blog work correctly. Additionally, I check the visitor count and ensure that no images are broken on the page. The results are then recorded and accessible in the Cypress Dashboard for analysis.
 
 #### **Cypress Workflow**
-
-The Cypress tests are executed in a separate GitHub Actions workflow that runs after the `Deploy Infrastructure` workflow completes successfully. Here’s how it works:
-
-1. **Pre-Check Step**:
-   - The workflow first verifies that the `infrastructure-deployment` job in the `Deploy Infrastructure` workflow has succeeded.
-   - If the deployment is confirmed as successful, the Cypress tests are initiated.
-
-2. **Cypress Execution**:
-   - The workflow sets up Node.js, installs the necessary dependencies, and proceeds to run the Cypress tests.
-   - Before executing the tests, the workflow waits for the website to become available at `https://fidelis-resume.fozdigitalz.com/`.
-   - Test results are recorded and can be accessed in the Cypress Dashboard for detailed analysis.
 
 ```yaml
 name: Cypress Tests
@@ -1332,17 +1325,14 @@ jobs:
           fi
 ```
 
-- **Cypress Tests**: The test validates the website's functionality, including features like the visitor counter, which proves the backend resources are working and overall responsiveness.
-- **Test Recording**: Results are recorded in the Cypress Dashboard for further review and analysis.
-
 #### **Challenges & Strategies**
-I wanted something else - make the Cypress Test run only when the the `Infrastrucure- Deployment` job in my main workflow runs successfully & skip when the `Infrastructure Cleanup` job runs. However, GitHub Actions does not directly support triggering a workflow from a specific job within another workflow. So, I must combine `workflow_run` event & job outputs to conditionaly achieve it. Guess what, I skipped this part so my test workflow runs whether I deploy or cleanup. I'd learn to make it better in my next improvement. 
+
+Using Cypress was easy to run the test. I got a good part of my the workflow from my Cypress Cloud dashboard after creating an account and a project on the platform. I got the Cypress Token, which I added as `CYPRESS_RECORD_KEY` in my GitHub Actions workflow. This allowed Cypress to upload test logs, screenshots, and videos to the Cypress Cloud dashboard for easier debugging. With this setup, I could monitor test history and quickly identify any failures after each deployment.
 
 ---
 
 ## **4. Results**
 The implementation of this architecture has resulted in a **highly reliable, secure, and scalable personal website**. Using **Cypress**, I conducted end-to-end tests to validate critical functionalities, including the visitor count, custom domain with HTTPS, API Gateway integration, and other site components, ensuring everything works as expected. Screenshots of the test results and videos demonstrating the functionality are included below. The combination of serverless components (Lambda, API Gateway, DynamoDB), global content delivery via CloudFront, and robust security measures (DNSSEC, AWS WAF, HTTPS) ensures a performant, secure, and cost-efficient solution.
-
 
 ![Result-Page](https://github.com/Fidelisesq/AWS-Cloud-Resume/blob/main/Images%2BVideos/Result-page1.png)
 
@@ -1352,5 +1342,8 @@ The implementation of this architecture has resulted in a **highly reliable, sec
 
 ## **5. Conclusion & Lessons Learnt**
 
-This project demonstrates how to build a scalable, secure, and cost-efficient serverless resume website on AWS. By leveraging Terraform for infrastructure as code and GitHub Actions for CI/CD, the entire deployment process is automated and reproducible. The use of serverless technologies ensures minimal operational overhead, while monitoring and alerting systems provide visibility into the system’s health..
+This project demonstrates how to build a scalable, secure, and cost-efficient serverless resume website on AWS. By leveraging Terraform for infrastructure as code and GitHub Actions for CI/CD, the entire deployment process is automated and reproducible. 
 
+The use of serverless technologies ensures minimal operational overhead, while monitoring and alerting systems provide visibility into the system’s health. This project reinforced the importance of automation, security, and monitoring in cloud deployments. 
+
+Overcoming challenges with API integrations, Terraform state management, and Lambda execution improved my troubleshooting skills and deepened my understanding of AWS services.
