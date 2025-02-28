@@ -920,7 +920,6 @@ resource "aws_wafv2_web_acl" "cloudfront_waf" {
       sampled_requests_enabled   = true
     }
   }
-
   
   # Visibility config for the WAF ACL itself
   visibility_config {
