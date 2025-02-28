@@ -13,11 +13,15 @@ The goal of this project was to enhance the accessibility and visibility of my r
 
 1. **Terraform Configuration**  
    I. **Provider, Identity Configuration + Terraform State Management**: Terraform version specified while **AWS S3** stores Terraform state. 
+
    II. **Frontend**: A static HTML resume hosted on **Amazon S3** and served via **CloudFront** for global content delivery. 
-   III. **Backend**: A serverless REST API built with **AWS Lambda** and **API Gateway** to handle dynamic functionality & DynamoDB to store visitor count.  
+
+   III. **Backend**: A serverless REST API built with **AWS Lambda** and **API Gateway** to handle dynamic functionality & DynamoDB to store visitor count. 
+
    IV. **Monitoring and Alerts**: **CloudWatch**, **SNS**, **PagerDuty**, and **Slack** for monitoring and notifications.  
+   
    V. **Security & DNS**: **AWS WAF, Route53 & DNSSEC** WAF to protect the website from common web exploits while Route53 for DNS management and DNSSEC for enhanced domain security. 
-   VI. **Provider Block & Terraform State Management**: S3 is used for centralised storage ensurng a reliable state management. 
+   
 
 2. **Code Test+ CI/CD**: Automated deployment pipeline using **GitHub Actions**.  
 3. **End-to-End Test**: Automated test of site functionality and app backend using Cypress.  
