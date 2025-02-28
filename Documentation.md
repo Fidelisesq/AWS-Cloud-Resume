@@ -1263,17 +1263,6 @@ jobs:
         run: cd terraform && terraform destroy -auto-approve
 ```
 
-`Screenshot of successful End-to-End Design Test`
-
-![Cypress end-to-end-test](https://github.com/Fidelisesq/AWS-Cloud-Resume/blob/main/Images%2BVideos/Cypress-Test-2.png)
-
-
-| ![Image 1](https://github.com/Fidelisesq/AWS-Cloud-Resume/blob/main/Images%2BVideos/Cypress-Test-33.png) | ![Image 2](https://github.com/Fidelisesq/AWS-Cloud-Resume/blob/main/Images%2BVideos/Cypress-Test-11.png) |
-|---|---|
-
-#### **Challenges & Strategies**
-When I started I had partial success of deployment here and there. I actually lost count of the number of `Workflow Runs` before I got a clean successful run. This section came with lots of debugging, learning to use `event`status and conditions to achieve my goal.
-
 ---
 
 ## **3. End-to-End Test with Cypress**
@@ -1332,6 +1321,16 @@ jobs:
             echo "cypress-status=failure" >> $GITHUB_OUTPUT
           fi
 ```
+`Screenshot of successful End-to-End Design Test`
+
+![Cypress end-to-end-test](https://github.com/Fidelisesq/AWS-Cloud-Resume/blob/main/Images%2BVideos/Cypress-Test-2.png)
+
+
+| ![Image 1](https://github.com/Fidelisesq/AWS-Cloud-Resume/blob/main/Images%2BVideos/Cypress-Test-33.png) | ![Image 2](https://github.com/Fidelisesq/AWS-Cloud-Resume/blob/main/Images%2BVideos/Cypress-Test-11.png) |
+|---|---|
+
+#### **Challenges & Strategies**
+When I started I had partial success of deployment here and there. I actually lost count of the number of `Workflow Runs` before I got a clean successful run. This section came with lots of debugging, learning to use `event`status and conditions to achieve my goal.
 
 #### **Challenges & Strategies**
 
