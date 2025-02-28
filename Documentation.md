@@ -1272,7 +1272,7 @@ jobs:
 |---|---|
 
 #### **Challenges & Strategies**
-When I started I had partial success of deplpyment here and there. I actually lost count of the number of `Workflow Runs` before I got a clean successfull run. This section came with lots of debugging, learning to use `event`status and conditions to achieve my goal.
+When I started I had partial success of deployment here and there. I actually lost count of the number of `Workflow Runs` before I got a clean successful run. This section came with lots of debugging, learning to use `event`status and conditions to achieve my goal.
 
 ---
 
@@ -1335,7 +1335,7 @@ jobs:
 
 #### **Challenges & Strategies**
 
-Using Cypress was easy to run the test. I got a good part of my the workflow from my Cypress Cloud dashboard after creating an account and a project on the platform. I got the Cypress Token, which I added as `CYPRESS_RECORD_KEY` in my GitHub Actions workflow. This allowed Cypress to upload test logs, screenshots, and videos to the Cypress Cloud dashboard for easier debugging. With this setup, I could monitor test history and quickly identify any failures after each deployment.
+Using Cypress made it easy to run the test. I got a good part of my workflow from my Cypress Cloud dashboard after creating an account and a project on the platform. I got the Cypress Token, which I added as `CYPRESS_RECORD_KEY` in my GitHub Actions workflow. This allowed Cypress to upload test logs, screenshots, and videos to the Cypress Cloud dashboard for easier debugging. With this setup, I could monitor test history and quickly identify any failures after each deployment.
 
 ---
 
@@ -1345,6 +1345,8 @@ The implementation of this architecture has resulted in a **highly reliable, sec
 ![Result-Page](https://github.com/Fidelisesq/AWS-Cloud-Resume/blob/main/Images%2BVideos/Result-page1.png)
 
 ### A quick run down of the resume page
+
+If you wish to see a thorough review, please see the video below and leave your comments if you have questions or suggestions on improvements. I covered the CI/CD, error alerting, WAF test, versioning, and more.
 
 ---
 
