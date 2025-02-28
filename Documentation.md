@@ -17,7 +17,7 @@ The goal of this project was to enhance the accessibility and visibility of my r
    III. **Backend**: A serverless REST API built with **AWS Lambda** and **API Gateway** to handle dynamic functionality & DynamoDB to store visitor count.  
    IV. **Monitoring and Alerts**: **CloudWatch**, **SNS**, **PagerDuty**, and **Slack** for monitoring and notifications.  
    V. **Security & DNS**: **AWS WAF, Route53 & DNSSEC** WAF to protect the website from common web exploits while Route53 for DNS management and DNSSEC for enhanced domain security. 
-   VI. **Terraform State Management**: S3 is used for centralised storage ensurng a reliable state management. 
+   VI. **Provider Block & Terraform State Management**: S3 is used for centralised storage ensurng a reliable state management. 
 
 2. **Code Test+ CI/CD**: Automated deployment pipeline using **GitHub Actions**.  
 3. **End-to-End Test**: Automated test of site functionality and app backend using Cypress.  
@@ -30,7 +30,7 @@ The goal of this project was to enhance the accessibility and visibility of my r
 The entire infrastructure is defined using Terraform (Infrastructure as Code), ensuring reproducibility and scalability. Below is a detailed explanation of the Terraform configuration. `Note:` You can find all configuration files in my [Github.](https://github.com/Fidelisesq/AWS-Cloud-Resume)
 
 
-### **I. Provider, Identity Configuration + Terraform State Management**
+### **I. Provider Block & Terraform State Management**
 
 The configuration uses **Amazon S3** for centralized state management, storing the `infrastructure.tfstate` file in the `foz-terraform-state-bucket` with encryption enabled. The **AWS provider** (version `>= 5.8.0`) is configured for deployment in the `us-east-1` region, and the Terraform version is set to `>= 1.10.3`. Additionally, the `aws_caller_identity` data resource retrieves information about the currently authenticated AWS account. This setup ensures secure, reliable state management and deployment configuration.
 
@@ -648,9 +648,9 @@ resource "aws_iam_policy" "lambda_sns_pagerduty_access" {
 resource "aws_lambda_layer_version" "pagerduty_lambda_layer" {
   layer_name  = "pagerduty_lambda_layer"
   filename    = "lambda_layer.zip"  # Path to your Lambda layer zip file
-  source_code_hash = filebase64sha256("lambda_layer.zip")  # Ensure Terraform tracks changes
+  source_code_hash = filebase64sha256("lambda_layer.zip")  # Ensures Terraform tracks changes
 
-  compatible_runtimes = ["python3.12"]  # Use the runtime compatible with your Lambda function
+  compatible_runtimes = ["python3.12"]  #
 }
 
 # Lambda function for PagerDuty integration + layers
@@ -1080,9 +1080,12 @@ resource "aws_route53_hosted_zone_dnssec" "dnssec" {
   depends_on = [ aws_route53_key_signing_key.dnssec_kms_key ]
 }
 ```
+`DNSSEC Activated`
+| ![DNNSEC Active-1](https://github.com/Fidelisesq/AWS-Cloud-Resume/blob/main/Images%2BVideos/DNSSEC%20Active-1.png) | ![DNSSEC Active-2](https://github.com/Fidelisesq/AWS-Cloud-Resume/blob/main/Images%2BVideos/DNSSEC%20Active-2.png) |
+|---|---|
 
 #### **Challenges & Strategies**
-Not really a challenge here but I got to discover that AWS WAF won't work with the HTTP API. So, I opted for the REST API with WAF to protect it. Later on, I placed WAF before my Cloudfront and introduced throttling to my REST API. Secondly, I initially created a KMS key needed for my DNSSEC without an active policy that grants me necessary permission like `PutKeyPolicy` & `Disable + DeleteKey` so it locked me out when I needed to modify `Sign` & `Verify` permission for `Route53`. I had to contact `AWS` support for help because I can't modify it nor schedule for deletion. 
+Not really a challenge here but I got to discover that AWS WAF won't work with the HTTP API. So, I opted for the REST API with WAF to protect it. Later on, I placed WAF before my Cloudfront and introduced throttling to my REST API. When WAF worked, using `AWSManagedRules` gave me issues. So, I checked the documentation for each rule and discovered the issue was me overriding some rules in my terraform config when the default actions was already set by AWS either as `count` or `block`. Secondly, I initially created a KMS key needed for my DNSSEC without an active policy that grants me necessary permission like `PutKeyPolicy` & `Disable + DeleteKey` so it locked me out when I needed to modify `Sign` & `Verify` permission for `Route53`. I had to contact `AWS` support for help because I can't modify it nor schedule for deletion. 
 
 ---
 
