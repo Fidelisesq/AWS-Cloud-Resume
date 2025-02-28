@@ -842,8 +842,7 @@ resource "aws_sns_topic_subscription" "sns_to_slack_subscription" {
   depends_on = [aws_lambda_permission.allow_sns] #Waits for Lambda perssion before subscription
 }
 
-
-#AWS WAF resource to front Cloudfront
+# AWS WAF resource to front CloudFront
 resource "aws_wafv2_web_acl" "cloudfront_waf" {
   name        = "cloudfront-waf"
   description = "WAF for CloudFront"
@@ -920,6 +919,29 @@ resource "aws_wafv2_web_acl" "cloudfront_waf" {
       sampled_requests_enabled   = true
     }
   }
+
+  # AWS Managed Known Bad Inputs Rule Set
+  rule {
+    name     = "KnownBadInputsRule"
+    priority = 3
+
+    override_action { 
+      count {} 
+    }
+
+    statement {
+      managed_rule_group_statement {
+        vendor_name = "AWS"
+        name        = "AWSManagedRulesKnownBadInputsRuleSet"
+      }
+    }
+
+    visibility_config {
+      cloudwatch_metrics_enabled = true
+      metric_name                = "KnownBadInputsRule"
+      sampled_requests_enabled   = true
+    }
+  }
   
   # Visibility config for the WAF ACL itself
   visibility_config {
@@ -928,8 +950,6 @@ resource "aws_wafv2_web_acl" "cloudfront_waf" {
     sampled_requests_enabled   = true
   }
 }
-
-
 
 #Terraform Backend (S3 for State Management)
 terraform {
