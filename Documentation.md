@@ -4,8 +4,6 @@
 
 Building a serverless resume website on AWS isn’t just about hosting a static page. It is like assembling a high-performance engine. When I decided to create my resume website, I wanted it to be more than just a digital placeholder—it had to be scalable, secure, and cost-efficient. Each component—S3, CloudFront, Lambda, DynamoDB, API Gateway, Route53+DNSSEC to Monitoring tools and AWS WAF—plays a critical role, while Terraform and GitHub CI/CD act as the control systems, ensuring everything runs smoothly. The result? A scalable, secure, and cost-efficient website. Let’s take a closer look under the hood!
 
-![Result-Page](https://github.com/Fidelisesq/AWS-Cloud-Resume/blob/main/Images%2BVideos/Result-page1.png)
-
 ---
 
 ## **Project Overview**
@@ -1173,33 +1171,10 @@ I wanted something else - make the Cypress Test run only when the the `Infrastru
 ## **4. Results**
 The implementation of this architecture has resulted in a **highly reliable, secure, and scalable personal website**. Using **Cypress**, I conducted end-to-end tests to validate critical functionalities, including the visitor count, custom domain with HTTPS, API Gateway integration, and other site components, ensuring everything works as expected. Screenshots of the test results and videos demonstrating the functionality are included below. The combination of serverless components (Lambda, API Gateway, DynamoDB), global content delivery via CloudFront, and robust security measures (DNSSEC, AWS WAF, HTTPS) ensures a performant, secure, and cost-efficient solution.
 
-#### A quick run down of the resume page
 
 ![Result-Page](https://github.com/Fidelisesq/AWS-Cloud-Resume/blob/main/Images%2BVideos/Result-page1.png)
 
-<video width="600" controls>
-  <source src="https://aws-certification-fidelis.s3.us-east-1.amazonaws.com/Video-1.mp4" type="video/mp4">
-  Your browser does not support the video tag.
-</video>
-
-#### CI/CD Pipeline Deployment
-
-<video width="600" controls>
-  <source src="https://aws-certification-fidelis.s3.us-east-1.amazonaws.com/Deploy%2BCypress-Workflow%2BRun.mp4" type="video/mp4">
-  Your browser does not support the video tag.
-</video>
-
-#### Cypress Automated Test
-
-<video width="600" controls>
-  <source src="https://aws-certification-fidelis.s3.us-east-1.amazonaws.com/EndtoEnd-Test.mp4" type="video/mp4">
-  Your browser does not support the video tag.
-</video>
-
----
-#### End-to-End Test Demo
-
-[![Watch the video](https://img.youtube.com/vi/DgplJt7eUN8/0.jpg)](https://youtu.be/DgplJt7eUN8)
+### A quick run down of the resume page
 
 ---
 

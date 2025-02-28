@@ -117,7 +117,7 @@ locals {
 # CloudFront distribution
 resource "aws_cloudfront_distribution" "cloud_resume_distribution" {
   web_acl_id = aws_wafv2_web_acl.cloudfront_waf.arn
-  depends_on = [aws_wafv2_web_acl.cloudfront_waf] 
+  #depends_on = [aws_wafv2_web_acl.cloudfront_waf] 
   origin {
     domain_name = aws_s3_bucket.cloud_resume_bucket.bucket_regional_domain_name
     origin_id   = "S3-cloud-resume-origin"
