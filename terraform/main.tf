@@ -1013,7 +1013,7 @@ resource "aws_cloudwatch_log_resource_policy" "waf_logs_policy" {
   EOF
 }
 
-/*
+
 # Enable AWS WAF logging to CloudWatch Logs
 resource "aws_wafv2_web_acl_logging_configuration" "cloudfront_waf_logging" {
   depends_on = [ aws_cloudwatch_log_group.waf_logs ]
@@ -1028,7 +1028,7 @@ resource "aws_wafv2_web_acl_logging_configuration" "cloudfront_waf_logging" {
     }
   }
 }
-*/
+
 
 #Terraform Backend (S3 for State Management)
 terraform {
