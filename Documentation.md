@@ -4,7 +4,7 @@
 
 Building a serverless resume website on AWS isn’t just about hosting a static page. It is like assembling a high-performance engine. When I decided to create my resume website, I wanted it to be more than just a digital placeholder—it had to be scalable, secure, and cost-efficient. 
 
-Each component—S3, CloudFront, Lambda, DynamoDB, API Gateway, Route53+DNSSEC to Monitoring tools and AWS WAF—plays a critical role, while Terraform and GitHub CI/CD act as the control systems, ensuring everything runs smoothly. Along the way, I encountered several `challenges` at different stages, from infrastructure setup to automation, and documented my `approach` to resolving them. The result? A scalable, secure, and cost-efficient website. Let’s take a closer look under the hood!
+Each component—S3, CloudFront, Lambda, DynamoDB, API Gateway, Route53+DNSSEC to Monitoring tools and AWS WAF—plays a critical role, while Terraform and GitHub Actions CI/CD act as the control systems, ensuring everything runs smoothly. Along the way, I encountered several `challenges` at different stages, from infrastructure setup to automation, and documented my `approach` to resolving them. The result? A scalable, secure, and cost-efficient website. Let’s take a closer look under the hood!
 
 ---
 
