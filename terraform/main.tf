@@ -993,6 +993,26 @@ resource "aws_cloudwatch_log_group" "waf_logs" {
   name = "/aws/waf/cloudfront-waf-logs"
 }
 
+# Attach a resource policy to allow AWS WAF to write logs
+resource "aws_cloudwatch_log_resource_policy" "waf_logs_policy" {
+  policy_name     = "AWSWAFLoggingPolicy"
+  policy_document = <<EOF
+  {
+    "Version": "2012-10-17",
+    "Statement": [
+      {
+        "Effect": "Allow",
+        "Principal": {
+          "Service": "waf.amazonaws.com"
+        },
+        "Action": "logs:PutLogEvents",
+        "Resource": "arn:aws:logs:us-east-1:${data.aws_caller_identity.current.account_id}:log-group:/aws/waf/cloudfront-waf-logs:*"
+      }
+    ]
+  }
+  EOF
+}
+
 /*
 # Enable AWS WAF logging to CloudWatch Logs
 resource "aws_wafv2_web_acl_logging_configuration" "cloudfront_waf_logging" {
