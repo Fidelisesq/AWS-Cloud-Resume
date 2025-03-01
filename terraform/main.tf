@@ -995,6 +995,7 @@ resource "aws_cloudwatch_log_group" "waf_logs" {
 
 # Enable AWS WAF logging to CloudWatch Logs
 resource "aws_wafv2_web_acl_logging_configuration" "cloudfront_waf_logging" {
+  depends_on = [ aws_cloudwatch_log_group.waf_logs ]
   log_destination_configs = [
     aws_cloudwatch_log_group.waf_logs.arn  # Use the ARN from the created log group
   ]
