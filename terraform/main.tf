@@ -988,10 +988,15 @@ rule {
   }
 }
 
-#Enable WAF Logging to CloudWatch Logs
+# Create CloudWatch Log Group for WAF Logs
+resource "aws_cloudwatch_log_group" "waf_logs" {
+  name = "/aws/waf/cloudfront-waf-logs"
+}
+
+# Enable AWS WAF logging to CloudWatch Logs
 resource "aws_wafv2_web_acl_logging_configuration" "cloudfront_waf_logging" {
   log_destination_configs = [
-    "arn:aws:logs:us-east-1:${data.aws_caller_identity.current.account_id}:log-group:/aws/waf/cloudfront-waf-logs"
+    aws_cloudwatch_log_group.waf_logs.arn  # Use the ARN from the created log group
   ]
   resource_arn = aws_wafv2_web_acl.cloudfront_waf.arn
 
@@ -1001,7 +1006,6 @@ resource "aws_wafv2_web_acl_logging_configuration" "cloudfront_waf_logging" {
     }
   }
 }
-
 
 
 #Terraform Backend (S3 for State Management)
