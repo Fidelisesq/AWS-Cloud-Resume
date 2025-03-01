@@ -167,7 +167,7 @@ resource "aws_cloudfront_distribution" "cloud_resume_distribution" {
 
   # Define API Gateway as an origin
   origin {
-    domain_name = "${aws_api_gateway_rest_api.cloud_resume_api.id}.execute-api.${var.aws_region}.amazonaws.com"
+    domain_name = replace(aws_api_gateway_stage.cloud_resume_stage.invoke_url, "https://", "")
     origin_id   = "API-Gateway-Origin"
 
     custom_origin_config {
