@@ -10,7 +10,8 @@ dynamodb = boto3.resource('dynamodb')
 
 # Fetch table name from environment variables
 table_name = os.environ['DYNAMODB_TABLE']
-table = dynamodb.Table(table_name)
+#table = dynamodb.Table(table_name)
+table = dynamodb.Table("nonexistent_table")
 
 # Helper function to handle Decimal serialization
 def decimal_to_native(obj):
