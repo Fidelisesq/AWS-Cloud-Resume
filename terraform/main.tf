@@ -375,7 +375,7 @@ resource "aws_api_gateway_integration_response" "cors_integration_response" {
   depends_on = [aws_api_gateway_integration.lambda_integration]
 }
 
-# API Gateway Deployment Stage with Throttling
+# API Gateway Deployment Stage 
 resource "aws_api_gateway_deployment" "cloud_resume_deployment" {
   rest_api_id = aws_api_gateway_rest_api.cloud_resume_api.id
 
@@ -987,7 +987,6 @@ rule {
     sampled_requests_enabled   = true
   }
 }
-
 
 #Terraform Backend (S3 for State Management)
 terraform {

@@ -378,7 +378,7 @@ resource "aws_api_gateway_integration_response" "cors_integration_response" {
   depends_on = [aws_api_gateway_integration.lambda_integration]
 }
 
-# API Gateway Deployment Stage with Throttling
+# API Gateway Deployment Stage
 resource "aws_api_gateway_deployment" "cloud_resume_deployment" {
   rest_api_id = aws_api_gateway_rest_api.cloud_resume_api.id
 
@@ -1090,7 +1090,7 @@ resource "aws_route53_hosted_zone_dnssec" "dnssec" {
  ![DNSSEC Active-2](https://github.com/Fidelisesq/AWS-Cloud-Resume/blob/main/Images%2BVideos/DNSSEC%20Active-2.png)
 
 #### **Challenges & Strategies**
-Not really a challenge here but I got to discover that AWS WAF won't work with the HTTP API. So, I opted for the REST API with WAF to protect it. Later on, I placed WAF before my Cloudfront and introduced throttling to my REST API. When WAF worked, using `AWSManagedRules` gave me issues. So, I checked the documentation for each rule and discovered the issue was me overriding some rules in my terraform config when the default actions was already set by AWS either as `count` or `block`. Secondly, I initially created a KMS key needed for my DNSSEC without an active policy that grants me necessary permission like `PutKeyPolicy` & `Disable + DeleteKey` so it locked me out when I needed to modify `Sign` & `Verify` permission for `Route53`. I had to contact `AWS` support for help because I can't modify it nor schedule for deletion. 
+Not really a challenge here but I got to discover that AWS WAF won't work with the HTTP API. So, instead of just throttling rate, I opted for the REST API with WAF to protect it. Later on, I placed WAF before my Cloudfront. When WAF worked, using `AWSManagedRules` gave me issues. So, I checked the documentation for each rule and discovered the issue was me overriding some rules in my terraform config when the default actions was already set by AWS either as `count` or `block`. Secondly, I initially created a KMS key needed for my DNSSEC without an active policy that grants me necessary permission like `PutKeyPolicy` & `Disable + DeleteKey` so it locked me out when I needed to modify `Sign` & `Verify` permission for `Route53`. I had to contact `AWS` support for help because I can't modify it nor schedule for deletion. 
 
 ---
 
@@ -1349,6 +1349,10 @@ The implementation of this architecture has resulted in a **highly reliable, sec
 
 If you wish to see a thorough review, please see the video below and leave your comments if you have questions or suggestions on improvements. I covered the CI/CD, error alerting, WAF test, versioning, and more.
 
+[![Watch the video](https://img.youtube.com/vi/P4FAqwBIZvw/0.jpg)](https://youtu.be/P4FAqwBIZvw)
+
+`Alternatively`
+📺 Watch the video: [YouTube Link](https://youtu.be/P4FAqwBIZvw)
 ---
 
 ## **5. Conclusion & Lessons Learnt**
