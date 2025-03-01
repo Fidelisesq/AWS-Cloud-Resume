@@ -1351,8 +1351,6 @@ If you wish to see a thorough review, please see the video below and leave your 
 
 [![Watch the video](https://img.youtube.com/vi/P4FAqwBIZvw/0.jpg)](https://youtu.be/P4FAqwBIZvw)
 
-`Alternatively`
-📺 Watch the video: [YouTube Link](https://youtu.be/P4FAqwBIZvw)
 ---
 
 ## **5. Conclusion & Lessons Learnt**
