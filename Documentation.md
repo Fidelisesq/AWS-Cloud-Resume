@@ -1359,4 +1359,4 @@ This project demonstrates how to build a scalable, secure, and cost-efficient se
 
 The use of serverless technologies ensures minimal operational overhead, while monitoring and alerting systems provide visibility into the system’s health. This project reinforced the importance of automation, security, and monitoring in cloud deployments. 
 
-Overcoming challenges with API integrations, Terraform state management, and Lambda execution improved my troubleshooting skills and deepened my understanding of AWS services.
+Overcoming challenges with API integrations, Terraform state management, and Lambda execution improved my troubleshooting skills and deepened my understanding of AWS services. Thanks
