@@ -867,7 +867,7 @@ resource "aws_wafv2_web_acl" "cloudfront_waf" {
     priority = 2
 
     override_action { 
-      count {} 
+      none {} 
     }
 
     statement {
@@ -1009,7 +1009,6 @@ resource "aws_wafv2_web_acl_logging_configuration" "cloudfront_waf_logging" {
   }
 }
 */
-
 
 #Terraform Backend (S3 for State Management)
 terraform {
