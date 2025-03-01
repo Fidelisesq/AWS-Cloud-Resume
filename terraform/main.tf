@@ -165,6 +165,20 @@ resource "aws_cloudfront_distribution" "cloud_resume_distribution" {
 resource "aws_cloudfront_distribution" "cloud_resume_distribution" {
   web_acl_id = aws_wafv2_web_acl.cloudfront_waf.arn
 
+  # Define API Gateway as an origin
+  origin {
+    domain_name = aws_api_gateway_rest_api.cloud_resume_api.id  # Use API Gateway domain
+    origin_id   = "API-Gateway-Origin"
+
+    custom_origin_config {
+      http_port              = 80
+      https_port             = 443
+      origin_protocol_policy = "https-only"
+      origin_ssl_protocols   = ["TLSv1.2"]
+    }
+  }
+
+  # Define S3 bucket as an origin
   origin {
     domain_name = aws_s3_bucket.cloud_resume_bucket.bucket_regional_domain_name
     origin_id   = "S3-cloud-resume-origin"
@@ -177,7 +191,7 @@ resource "aws_cloudfront_distribution" "cloud_resume_distribution" {
 
   aliases = [var.domain_name] # Custom domain name
 
-  # Default caching for static site (HTML, CSS)
+  # Cache static site (HTML, CSS, JS) normally
   default_cache_behavior {
     allowed_methods  = ["GET", "HEAD"]
     cached_methods   = ["GET", "HEAD"]
@@ -193,18 +207,18 @@ resource "aws_cloudfront_distribution" "cloud_resume_distribution" {
     }
   }
 
-  # Ensure every request to "/visitors" reaches Lambda
+  # Ensure "/visitors" API requests go to API Gateway (not S3)
   ordered_cache_behavior {
     path_pattern     = "/visitors"
     allowed_methods  = ["GET", "HEAD", "OPTIONS"]
     cached_methods   = ["GET", "HEAD"]
-    target_origin_id = "API-Gateway-Origin" # Replace with the correct API Gateway origin ID
+    target_origin_id = "API-Gateway-Origin"  
 
     viewer_protocol_policy = "redirect-to-https"
 
     forwarded_values {
-      query_string = true  # API requests may use query parameters
-      headers      = ["Authorization", "CloudFront-Viewer-Address"] # Forward headers if needed
+      query_string = true
+      headers      = ["Authorization", "CloudFront-Viewer-Address"]
       cookies {
         forward = "all"
       }
@@ -226,10 +240,11 @@ resource "aws_cloudfront_distribution" "cloud_resume_distribution" {
   # Restrictions block to meet CloudFront requirements
   restrictions {
     geo_restriction {
-      restriction_type = "none" #Allows requests from all geographic locations
+      restriction_type = "none" # Allows requests from all locations
     }
   }
 }
+
 
 
 # Fetch the Route 53 hosted zone info for fozdigitalz.com
