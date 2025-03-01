@@ -10,6 +10,40 @@ dynamodb = boto3.resource('dynamodb')
 
 # Fetch table name from environment variables
 table_name = os.environ['DYNAMODB_TABLE']
+            
+            if isinstance(count, Decimal):
+                count = int(count)
+            
+            # Increment the counter
+            count += 1
+            
+            # Update the counter and visitor's last visit time in the database
+            table.put_item(Item={"id": "counter", "count": count})
+            table.put_item(Item={"id": f"visitor_{visitor_hash}", "lastVisit": now.strftime('%Y-%m-%dT%H:%M:%SZ')})
+            
+            # Return the updated count with CORS headers
+            return {
+                "statusCode": 200,
+                "headers": {
+                    "Access-Control-Allow-Origin": "https://fidelis-resume.fozdigitalz.com",
+                    "Access-Control-Allow-Methods": "GET, OPTIONS",
+                    "Access-Control-Allow-Headers": "Content-Type"
+                },
+                "body": json.dumps({ "count": count }, default=decimal_to_native)
+            }
+    
+    except Exception as e:
+        print("Error updating visitor count:", str(e))
+        return {
+            "statusCode": 500,
+            "headers": {
+                "Access-Control-Allow-Origin": "https://fidelis-resume.fozdigitalz.com",
+                "Access-Control-Allow-Methods": "GET, OPTIONS",
+                "Access-Control-Allow-Headers": "Content-Type"
+            },
+            "body": json.dumps({ "error": "Internal Server Error" })
+        }
+
 table = dynamodb.Table(table_name)
 
 
@@ -60,36 +94,3 @@ def lambda_handler(event, context):
             # Fetch the current counter value
             response = table.get_item(Key=key)
             count = response.get('Item', {}).get('count', 0)
-            
-            if isinstance(count, Decimal):
-                count = int(count)
-            
-            # Increment the counter
-            count += 1
-            
-            # Update the counter and visitor's last visit time in the database
-            table.put_item(Item={"id": "counter", "count": count})
-            table.put_item(Item={"id": f"visitor_{visitor_hash}", "lastVisit": now.strftime('%Y-%m-%dT%H:%M:%SZ')})
-            
-            # Return the updated count with CORS headers
-            return {
-                "statusCode": 200,
-                "headers": {
-                    "Access-Control-Allow-Origin": "https://fidelis-resume.fozdigitalz.com",
-                    "Access-Control-Allow-Methods": "GET, OPTIONS",
-                    "Access-Control-Allow-Headers": "Content-Type"
-                },
-                "body": json.dumps({ "count": count }, default=decimal_to_native)
-            }
-    
-    except Exception as e:
-        print("Error updating visitor count:", str(e))
-        return {
-            "statusCode": 500,
-            "headers": {
-                "Access-Control-Allow-Origin": "https://fidelis-resume.fozdigitalz.com",
-                "Access-Control-Allow-Methods": "GET, OPTIONS",
-                "Access-Control-Allow-Headers": "Content-Type"
-            },
-            "body": json.dumps({ "error": "Internal Server Error" })
-        }
