@@ -988,6 +988,22 @@ rule {
   }
 }
 
+#Enable WAF Logging to CloudWatch Logs
+resource "aws_wafv2_web_acl_logging_configuration" "cloudfront_waf_logging" {
+  log_destination_configs = [
+    "arn:aws:logs:us-east-1:${data.aws_caller_identity.current.account_id}:log-group:/aws/waf/cloudfront-waf-logs"
+  ]
+  resource_arn = aws_wafv2_web_acl.cloudfront_waf.arn
+
+  redacted_fields {
+    single_header {
+      name = "authorization"
+    }
+  }
+}
+
+
+
 #Terraform Backend (S3 for State Management)
 terraform {
   backend "s3" {
