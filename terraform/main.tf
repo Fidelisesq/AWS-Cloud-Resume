@@ -165,7 +165,7 @@ resource "aws_cloudfront_distribution" "cloud_resume_distribution" {
 resource "aws_cloudfront_distribution" "cloud_resume_distribution" {
   web_acl_id = aws_wafv2_web_acl.cloudfront_waf.arn
 
-  # Define API Gateway as an origin
+  # ✅ Define API Gateway as an origin
   origin {
     domain_name = replace(replace(aws_api_gateway_stage.cloud_resume_stage.invoke_url, "https://", ""), "/${aws_api_gateway_stage.cloud_resume_stage.stage_name}", "")
     origin_id   = "API-Gateway-Origin"
@@ -178,7 +178,7 @@ resource "aws_cloudfront_distribution" "cloud_resume_distribution" {
     }
   }
 
-  # Define S3 bucket as an origin
+  # ✅ Define S3 bucket as an origin for static content
   origin {
     domain_name = aws_s3_bucket.cloud_resume_bucket.bucket_regional_domain_name
     origin_id   = "S3-cloud-resume-origin"
@@ -189,9 +189,9 @@ resource "aws_cloudfront_distribution" "cloud_resume_distribution" {
   enabled             = true
   default_root_object = "cloud-resume.html"
 
-  aliases = [var.domain_name] # Custom domain name
+  aliases = [var.domain_name] # ✅ Custom domain name (e.g., fidelis-resume.fozdigitalz.com)
 
-  # Cache static site (HTML, CSS, JS) normally
+  # ✅ Default behavior: Cache static site (HTML, CSS, JS, Images)
   default_cache_behavior {
     allowed_methods  = ["GET", "HEAD"]
     cached_methods   = ["GET", "HEAD"]
@@ -205,9 +205,13 @@ resource "aws_cloudfront_distribution" "cloud_resume_distribution" {
         forward = "none"
       }
     }
+
+    min_ttl     = 0
+    default_ttl = 86400  # Cache for 1 day
+    max_ttl     = 31536000 # Cache for 1 year
   }
 
-  # Ensure "/visitors" API requests go to API Gateway (not S3)
+  # ✅ Ensure "/visitors" API requests go to API Gateway (not S3)
   ordered_cache_behavior {
     path_pattern     = "/visitors"
     allowed_methods  = ["GET", "HEAD", "OPTIONS"]
@@ -218,33 +222,32 @@ resource "aws_cloudfront_distribution" "cloud_resume_distribution" {
 
     forwarded_values {
       query_string = true
-      headers      = ["Authorization", "CloudFront-Viewer-Address"]
+      headers      = ["X-Forwarded-For"]  # ✅ Forward real visitor IP for tracking
       cookies {
-        forward = "all"
+        forward = "none"
       }
     }
 
-    # Prevent CloudFront from caching API responses
+    # ✅ Prevent CloudFront from caching API responses
     min_ttl     = 0
     default_ttl = 0
     max_ttl     = 0
   }
 
-  # Viewer certificate for HTTPS
+  # ✅ Viewer certificate for HTTPS (SSL)
   viewer_certificate {
     acm_certificate_arn      = var.acm_certificate_arn
     ssl_support_method       = "sni-only"
     minimum_protocol_version = "TLSv1.2_2019"
   }
 
-  # Restrictions block to meet CloudFront requirements
+  # ✅ Restrictions block to meet CloudFront requirements
   restrictions {
     geo_restriction {
       restriction_type = "none" # Allows requests from all locations
     }
   }
 }
-
 
 
 # Fetch the Route 53 hosted zone info for fozdigitalz.com
