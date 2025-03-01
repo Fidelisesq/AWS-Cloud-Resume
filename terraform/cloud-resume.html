@@ -329,7 +329,7 @@
                 console.log("API Response:", data);
 
                 if (data && data.count) {
-                    document.getElementById("visitor-counter").innerText = `Visitor Count: $${data.count}`;
+                    document.getElementById("visitor-counter").innerText = `Visitor Count: ${data.count}`;
                 } else {
                     console.error("Invalid data format:", data);
                 }

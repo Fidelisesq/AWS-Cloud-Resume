@@ -99,7 +99,7 @@ resource "aws_s3_object" "cloud_resume_html" {
   }
 }
 
-
+/*
 # Cloudfront Origin Access Control (OAC)
 resource "aws_cloudfront_origin_access_control" "cloud_resume_oac" {
   name                              = "cloud-resume-oac"
@@ -143,6 +143,77 @@ resource "aws_cloudfront_distribution" "cloud_resume_distribution" {
         forward = "none"
       }
     }
+  }
+
+  # Viewer certificate for HTTPS
+  viewer_certificate {
+    acm_certificate_arn      = var.acm_certificate_arn
+    ssl_support_method       = "sni-only"
+    minimum_protocol_version = "TLSv1.2_2019"
+  }
+
+  # Restrictions block to meet CloudFront requirements
+  restrictions {
+    geo_restriction {
+      restriction_type = "none" #Allows requests from all geographic locations
+    }
+  }
+}
+*/
+
+#Cloudfront with Cache Setting for Page & Backend
+resource "aws_cloudfront_distribution" "cloud_resume_distribution" {
+  web_acl_id = aws_wafv2_web_acl.cloudfront_waf.arn
+
+  origin {
+    domain_name = aws_s3_bucket.cloud_resume_bucket.bucket_regional_domain_name
+    origin_id   = "S3-cloud-resume-origin"
+
+    origin_access_control_id = aws_cloudfront_origin_access_control.cloud_resume_oac.id
+  }
+
+  enabled             = true
+  default_root_object = "cloud-resume.html"
+
+  aliases = [var.domain_name] # Custom domain name
+
+  # Default caching for static site (HTML, CSS)
+  default_cache_behavior {
+    allowed_methods  = ["GET", "HEAD"]
+    cached_methods   = ["GET", "HEAD"]
+    target_origin_id = "S3-cloud-resume-origin"
+
+    viewer_protocol_policy = "redirect-to-https"
+
+    forwarded_values {
+      query_string = false
+      cookies {
+        forward = "none"
+      }
+    }
+  }
+
+  # Ensure every request to "/visitors" reaches Lambda
+  ordered_cache_behavior {
+    path_pattern     = "/visitors"
+    allowed_methods  = ["GET", "HEAD", "OPTIONS"]
+    cached_methods   = ["GET", "HEAD"]
+    target_origin_id = "API-Gateway-Origin" # Replace with the correct API Gateway origin ID
+
+    viewer_protocol_policy = "redirect-to-https"
+
+    forwarded_values {
+      query_string = true  # API requests may use query parameters
+      headers      = ["Authorization", "CloudFront-Viewer-Address"] # Forward headers if needed
+      cookies {
+        forward = "all"
+      }
+    }
+
+    # Prevent CloudFront from caching API responses
+    min_ttl     = 0
+    default_ttl = 0
+    max_ttl     = 0
   }
 
   # Viewer certificate for HTTPS
@@ -421,10 +492,12 @@ resource "aws_api_gateway_method_settings" "cloud_resume_metrics" {
   stage_name  = aws_api_gateway_stage.cloud_resume_stage.stage_name
 
   method_path = "visitors/GET"
+
   settings {
     metrics_enabled    = true
     data_trace_enabled = true
     logging_level      = "ERROR"
+
   }
 }
 
