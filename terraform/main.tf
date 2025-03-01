@@ -99,7 +99,7 @@ resource "aws_s3_object" "cloud_resume_html" {
   }
 }
 
-/*
+
 # Cloudfront Origin Access Control (OAC)
 resource "aws_cloudfront_origin_access_control" "cloud_resume_oac" {
   name                              = "cloud-resume-oac"
@@ -113,7 +113,7 @@ locals {
   cloudfront_waf_arn = aws_wafv2_web_acl.cloudfront_waf.arn
 }
 
-
+/*
 # CloudFront distribution
 resource "aws_cloudfront_distribution" "cloud_resume_distribution" {
   web_acl_id = aws_wafv2_web_acl.cloudfront_waf.arn
