@@ -114,42 +114,6 @@
                 max-height: 44px;
             }
         }
-        /* Default button styling */
-        #darkModeToggle {
-            background-color: #2c3e50; /* Dark blue */
-            color: white;
-            border: none;
-            padding: 10px 15px;
-            cursor: pointer;
-            font-size: 16px;
-            border-radius: 5px;
-
-            /* Position the button on the right side */
-            position: absolute;
-            right: 5px; /* Distance from the right side */
-            top: 140px; /* Distance from the top of the page */
-            z-index: 1000; /* Ensure it appears on top of other content */
-        }
-
-        /* Change button style in dark mode */
-        .dark-mode #darkModeToggle {
-            background-color: #ffffff; /* White */
-            color: #121212; /* Dark text */
-        }
-
-        /* Dark Mode Styles */
-        .dark-mode {
-            background: #121212 !important; /* Dark background */
-            color: #ffffff !important; /* Light text */
-        }
-
-        .dark-mode h1,
-        .dark-mode h2,
-        .dark-mode h3,
-        .dark-mode h4 {
-            color: #ffffff !important; /* Make headings white */
-        }
-
 
     </style>
 
@@ -167,8 +131,6 @@
             <div id="last-updated">Last time updated: <span id="update-time"></span></div>
         </div>
     </div>
-
-    <button id="darkModeToggle">Toggle Dark Mode</button>
 
     <p>
         (+44) 777-1042-109 • fidelis.ikoroje@gmail.com <br>
@@ -393,27 +355,5 @@
            // Optional: Update the time every minute
            setInterval(updateTime, 60000);
     </script>
-
-    <script>
-        const darkModeToggle = document.getElementById("darkModeToggle");
-        const body = document.body;
-
-        // Check for saved preference in localStorage
-        if (localStorage.getItem("darkMode") === "enabled") {
-            body.classList.add("dark-mode");
-        }
-
-        darkModeToggle.addEventListener("click", () => {
-            body.classList.toggle("dark-mode");
-
-            // Save preference in localStorage
-            if (body.classList.contains("dark-mode")) {
-                localStorage.setItem("darkMode", "enabled");
-            } else {
-                localStorage.setItem("darkMode", "disabled");
-            }
-        });
-    </script>
-
 </body>
 </html>
