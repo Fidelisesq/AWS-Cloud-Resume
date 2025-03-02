@@ -214,7 +214,7 @@ resource "aws_cloudfront_distribution" "cloud_resume_distribution" {
 ```
 
 #### **Challenges & Strategies**
-CORS setting was my major challenge here as browswers were blocking requests to S3 bucket due to incorrect CORS headers. I checked AWS documentation & used browser developers tools to debug and setup cache invalidation as Cloudfront was still serving old contents even though my CORS is now updated. For HTTPS & custom domain, I followed AWS best practices to set up ACM and Route 53, ensuring a secure and reliable custom domain setup.
+CORS setting was my major challenge here as browsers were blocking requests to S3 bucket due to incorrect CORS headers. I checked AWS documentation & used browser developers tools to debug and setup cache invalidation as Cloudfront was still serving old contents even though my CORS is now updated. For HTTPS & custom domain, I followed AWS best practices to set up ACM and Route 53, ensuring a secure and reliable custom domain setup.
 
 ---
 
@@ -1359,4 +1359,4 @@ This project demonstrates how to build a scalable, secure, and cost-efficient se
 
 The use of serverless technologies ensures minimal operational overhead, while monitoring and alerting systems provide visibility into the system’s health. This project reinforced the importance of automation, security, and monitoring in cloud deployments. 
 
-Overcoming challenges with API integrations, Terraform state management, and Lambda execution improved my troubleshooting skills and deepened my understanding of AWS services. Thanks
+Overcoming challenges with API integrations, Terraform state management, and Lambda execution improved my troubleshooting skills and deepened my understanding of AWS services.
