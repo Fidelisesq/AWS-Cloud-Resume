@@ -1347,9 +1347,13 @@ The implementation of this architecture has resulted in a **highly reliable, sec
 
 ### A quick run down of the resume page
 
-If you wish to see a thorough review, please see the video below and leave your comments if you have questions or suggestions on improvements. I covered the CI/CD, error alerting, WAF test, versioning, and more.
-
 [![Watch the video](https://img.youtube.com/vi/P4FAqwBIZvw/0.jpg)](https://youtu.be/P4FAqwBIZvw)
+
+
+If you wish to see a thorough review, please see the video below and leave your comments if you have questions or suggestions on improvements. I covered the CI/CD, error alerting, WAF test, versioning, and more in the video below.
+
+[![AWS Cloud Resume - Detailed Review](https://img.youtube.com/vi/GZmRRK9aSso/0.jpg)](https://youtu.be/GZmRRK9aSso)
+
 
 ---
 
